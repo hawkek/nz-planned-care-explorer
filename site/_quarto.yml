@@ -1,0 +1,48 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - data/*.json
+    - downloads/*.csv
+    - assets/*.js
+    - assets/*.txt
+
+website:
+  title: "NZ Waitlist Tracker"
+  description: "Independent tracker of New Zealand hospital waitlists since 2019, by district and specialty, using Health NZ ESPI data."
+  navbar:
+    left:
+      - href: index.qmd
+        text: National
+      - href: district.qmd
+        text: My district
+      - href: specialty.qmd
+        text: Specialties
+      - href: fair.qmd
+        text: Fair comparisons
+      - href: target.qmd
+        text: Time to target
+      - href: methods.qmd
+        text: Methods and data
+  page-footer:
+    left: |
+      Data: Health New Zealand | Te Whatu Ora (ESPI web tool and OIA release HNZ00201361).
+      Independent project, not endorsed by Health NZ. Not medical advice.
+      <span id="data-version"></span>
+    right: |
+      [Methods](methods.qmd) · [Source code](https://github.com/hawkek/dashboard)
+
+format:
+  html:
+    theme: [cosmo, assets/theme.scss]
+    toc: false
+    page-layout: article
+    smooth-scroll: false
+    include-in-header:
+      text: |
+        <meta name="color-scheme" content="light dark">
+    include-after-body:
+      text: |
+        <script src="assets/d3.min.js"></script>
+        <script src="assets/plot.umd.min.js"></script>
+        <script src="assets/app.js"></script>

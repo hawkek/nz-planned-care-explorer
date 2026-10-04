@@ -1,0 +1,7 @@
+---
+title: "Fair comparisons"
+subtitle: "Which districts have a larger or smaller share of their waiting list waiting over four months than their size would suggest?"
+---
+
+::: {#page-fair}
+:::

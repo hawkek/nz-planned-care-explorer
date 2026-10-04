@@ -1,0 +1,21 @@
+Package: nzwaitlist
+Title: NZ Waitlist Tracker Pipeline
+Version: 0.1.0
+Description: Reads Health NZ elective services patient flow indicator (ESPI)
+    data, checks it, models trends and builds the data for a static website.
+    Not an installable package; this file lists dependencies for CI.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.3)
+Imports:
+    dplyr,
+    jsonlite,
+    lubridate,
+    MASS,
+    mgcv,
+    readr,
+    readxl,
+    tibble
+Suggests:
+    chromote,
+    testthat (>= 3.0.0)

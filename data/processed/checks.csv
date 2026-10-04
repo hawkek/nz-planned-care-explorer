@@ -1,0 +1,13 @@
+check,severity,passed,n_failing,detail
+"Every row has a parseable month, district, specialty and indicator",error,TRUE,0,
+Counts are numbers or '<5',error,TRUE,0,
+"Indicator is one of ESPI 1, 2, 3, 5, 8",error,TRUE,0,
+District is one of the expected 20 districts,error,TRUE,0,
+Each district stays in its expected region,error,TRUE,0,
+Specialty has been seen before for this indicator,warning,TRUE,0,A new specialty may be a rename; check before publishing.
+No negative counts,error,TRUE,0,
+"One row per month, district, specialty and indicator",error,TRUE,0,
+No missing months in each indicator's national series,error,TRUE,0,
+Numerator is not larger than denominator,warning,FALSE,13,"Equivalent to percentages above 100, as all percentages are computed from the counts. Present in the provisional OIA history for ESPI 2. These rows are kept in counts but excluded from proportions."
+"ESPI 1 counts services, so each row is 0 or 1 of 0 or 1",error,TRUE,0,
+"District totals equal the sum of specialties, allowing for suppression",warning,TRUE,0,Not applicable: no district total rows in the current sources.

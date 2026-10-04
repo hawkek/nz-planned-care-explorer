@@ -1,0 +1,7 @@
+---
+title: "Where is the wait for a specialty longest?"
+subtitle: "Districts compared for one specialty, in the latest month."
+---
+
+::: {#page-specialty}
+:::

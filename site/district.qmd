@@ -1,0 +1,7 @@
+---
+title: "How is my district doing?"
+subtitle: "Trends for one district, and the specialties with the most patients waiting more than four months."
+---
+
+::: {#page-district}
+:::

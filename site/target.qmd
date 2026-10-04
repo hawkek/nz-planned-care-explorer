@@ -1,0 +1,7 @@
+---
+title: "Time to target"
+subtitle: "If the trend of the last 24 months simply continued, when would no one be waiting more than four months? Illustrative only, not a forecast."
+---
+
+::: {#page-target}
+:::
