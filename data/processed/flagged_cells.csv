@@ -1,0 +1,7 @@
+indicator,month,district,specialty,value,local_median
+ESPI2,2019-02-01,Canterbury,General Surgery,11,406
+ESPI2,2025-01-01,Hawke's Bay,General Surgery,830,517
+ESPI2,2025-01-01,Hawke's Bay,Gynaecology,1247,622
+ESPI2,2025-01-01,Hawke's Bay,Ophthalmology,1142,569
+ESPI2,2025-01-01,Hawke's Bay,Orthopaedics,1503,863
+ESPI2,2020-02-01,Southern,Orthopaedics,117,466

@@ -11,4 +11,6 @@ No missing months in each indicator's national series,error,TRUE,0,
 Numerator is not larger than denominator,warning,FALSE,13,"Equivalent to percentages above 100, as all percentages are computed from the counts. Present in the provisional OIA history for ESPI 2. These rows are kept in counts but excluded from proportions."
 "ESPI 1 counts services, so each row is 0 or 1 of 0 or 1",error,TRUE,0,
 "District totals equal the sum of specialties, allowing for suppression",warning,TRUE,0,Not applicable: no district total rows in the current sources.
+No one-month spikes or dips in a district and specialty series,warning,FALSE,6,A value more than 300 patients and 40% away from the median of the surrounding five months. Usually a reporting error (for example a duplicated load). Values are published unchanged and listed here.
+Matches published FSA health target results,warning,TRUE,0,Compared 1 published figure(s) with 100% minus the ESPI 2 share of the list.
 No months from after the July 2026 change of data system,warning,TRUE,0,"From July 2026 Health NZ reports from NBRD instead of NBRS, with different rules for ESPI 2 and 5. Figures either side of the change may not be comparable; see the methods page."

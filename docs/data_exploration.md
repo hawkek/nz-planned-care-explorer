@@ -80,7 +80,7 @@ ESPI_DEFINITION, PERCENTAGE`. One reader handles all of them.
 
 | | Jan 2019 | Peak | Dec 2024 | Dec 2025 |
 |---|---:|---:|---:|---:|
-| ESPI 2, patients waiting more than 4 months for a first specialist assessment | 10,250 | 85,960 (Jan 2025) | 77,770 | 75,160 |
+| ESPI 2, patients waiting more than 4 months for a first specialist assessment | 10,250 | 85,960 (Jan 2025; about 3,400 of this looks like a Hawke's Bay double count, see below) | 77,770 | 75,160 |
 | ESPI 2, share of the waiting list | 8.6% | 41.8% (Mar 2025) | | 37.8% |
 | ESPI 5, patients waiting more than 4 months after a commitment to treatment | 4,400 | 35,900 (Jan 2025) | 33,050 | 27,740 |
 | ESPI 5, share of those with a commitment | 10.2% | 44.1% (Feb 2023) | | 35.3% |
@@ -88,3 +88,81 @@ ESPI_DEFINITION, PERCENTAGE`. One reader handles all of them.
 Suppression adds a range of a few hundred to the national totals (for example,
 75,039 to 75,285 for ESPI 2 in December 2025), which is under 0.5% of the
 total. The ranges matter more at district and specialty level.
+
+## Cross-checks against figures published elsewhere (added 4 October 2026)
+
+### Health target dashboard: a direct match
+
+Health NZ's health target for first specialist assessment is "the number of
+patients waiting at the end of the period and of those how many have been
+waiting less than 4 months". That is 100% minus the ESPI 2 share of the list.
+
+| Month | Published | OIA data |
+|---|---:|---:|
+| June 2025 (Q4 2024/25) | 62.0% | 62.0% to 62.1% |
+
+This match supports three things:
+
+- the ESPI 2 denominator is the total waiting for a first assessment, as
+  inferred;
+- the quarterly health target is the end-of-quarter snapshot;
+- the OIA history agrees with what Health NZ itself publishes, at least for
+  that month.
+
+The dashboard also gives district values for June 2026 (Q4 2025/26). They are
+stored in `config/reference/health_target_fsa.csv`, and checked automatically
+once a live download covers June 2026. June 2026 is also the last month before
+NBRD, so it is the best available benchmark for the NBRS-era data.
+
+The **treatment** health target (72.6% in Q4 2025/26) is not comparable with
+ESPI 5. The OIA data gives 64.6% for December 2025 on the ESPI 5 basis. A gap
+that size points to a different denominator or a different start for the clock,
+in line with the NBRD definitions (time since waitlisted, all patients waiting
+for elective treatment).
+
+### A secondary source: a Policywise article (insurance broker)
+
+The article quotes January figures from an OIA response (May 2024) and from
+Ministry of Health ESPI reports, apparently as published at the time. It is a
+commercial site with an interest in long waits, so its numbers are treated as
+secondary. Even so, they are useful for checking revisions.
+
+| January | ESPI 2, article | ESPI 2, OIA 2026 | ESPI 5, article | ESPI 5, OIA 2026 |
+|---|---:|---:|---:|---:|
+| 2019 | 10,208 | 10,155 to 10,344 | 4,368 | 4,331 to 4,478 |
+| 2020 | 14,721 | 14,653 to 14,851 | 7,732 | 7,712 to 7,835 |
+| 2021 | 20,185 | 19,884 to 20,088 | 11,922 | 11,892 to 11,985 |
+| 2022 | 36,183 | 35,710 to 35,923 | 21,783 | 21,655 to 21,691 |
+| 2023 | 51,849 | 51,417 to 51,597 | 32,260 | 31,541 to 31,613 |
+| 2024 | 74,450 | 74,381 to 74,552 | 32,507 | 30,048 to 30,096 |
+| 2025 | 77,972 | **85,873 to 86,047** | 37,337 | 35,863 to 35,941 |
+
+- For 2019 to 2024, ESPI 2 agrees within about 1%. ESPI 5 is lower in the 2026
+  release for 2023 to 2025, by up to 2,400 (7%) in January 2024. This is
+  consistent with later revisions to provisional data, but the article cannot
+  show which version is right.
+- **January 2025 ESPI 2 is about 8,000 higher in the OIA release.** About 3,400
+  of that is a **Hawke's Bay anomaly**: almost every Hawke's Bay specialty
+  roughly doubled in January 2025 and returned to normal in February. For
+  example, Gynaecology went 616, 1,247, 619; Ophthalmology 569, 1,142, 596;
+  Urology 243, 501, 240. That pattern looks like a duplicated data load. For
+  February 2025, the article's specialty figures are also lower than the OIA's,
+  most of all for Ophthalmology (5,866 against about 8,640). Much of that gap
+  is Auckland, whose Ophthalmology count rose from 2,100 in December 2024 to
+  3,600 in March 2025. Whether this is a real rise, late reporting, or a revision
+  cannot be told from the data.
+
+### Consequences
+
+1. The **January 2025 "peak" of about 86,000 is partly an artefact.** Without
+   the Hawke's Bay doubling, January 2025 would be about 82,800, and the
+   highest month would be February 2025 (about 83,000). `docs/findings.md` has
+   been corrected.
+2. A new warning-level check flags one-month spikes and dips (more than 300
+   patients and 40% away from the surrounding five-month median). It finds 6
+   cells: the 4 Hawke's Bay cells above, Canterbury General Surgery in February
+   2019 (11, against about 406), and Southern Orthopaedics in February 2020
+   (117, against about 466). They are published unchanged and listed in
+   `data/processed/flagged_cells.csv`.
+3. Revisions of a few percent to provisional figures are normal for this data,
+   which is a further reason to log every revision (`revisions.csv`).

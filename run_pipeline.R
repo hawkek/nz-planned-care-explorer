@@ -69,6 +69,7 @@ readr::write_csv(
   "data/processed/district_monthly.csv", na = ""
 )
 readr::write_csv(select(checks, -example), "data/processed/checks.csv", na = "")
+readr::write_csv(find_spikes(long), "data/processed/flagged_cells.csv", na = "")
 readr::write_csv(reconciliation, "data/processed/reconciliation.csv", na = "")
 if (!file.exists("data/processed/revisions.csv")) {
   readr::write_csv(mutate(empty_revisions(), detected = as.Date(character())),
@@ -108,7 +109,7 @@ write_json(targets, "site/data/target.json")
 
 dir.create("site/downloads", showWarnings = FALSE, recursive = TRUE)
 for (f in c("espi_long.csv", "national_monthly.csv", "district_monthly.csv",
-            "checks.csv", "reconciliation.csv", "revisions.csv")) {
+            "checks.csv", "flagged_cells.csv", "reconciliation.csv", "revisions.csv")) {
   file.copy(file.path("data/processed", f), file.path("site/downloads", f),
             overwrite = TRUE)
 }

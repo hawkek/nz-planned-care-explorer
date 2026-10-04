@@ -21,7 +21,8 @@ key_view <- function(d) {
                                    "num_lo", "num_hi", "den_lo", "den_hi", "source_file")))
 }
 
-run_checks <- function(long, reference) {
+run_checks <- function(long, reference,
+                       health_target = read_health_target_reference()) {
   dplyr::bind_rows(
     check_result(
       "Every row has a parseable month, district, specialty and indicator", "error",
@@ -83,6 +84,15 @@ run_checks <- function(long, reference) {
                                (!num_lo %in% c(0, 1) | !den_lo %in% c(0, 1))))
     ),
     check_district_totals(long),
+    check_result(
+      "No one-month spikes or dips in a district and specialty series", "warning",
+      find_spikes(long),
+      paste("A value more than 300 patients and 40% away from the median of",
+            "the surrounding five months. Usually a reporting error (for",
+            "example a duplicated load). Values are published unchanged and",
+            "listed here.")
+    ),
+    check_health_target(long, health_target),
     check_result(
       "No months from after the July 2026 change of data system", "warning",
       long |>
@@ -148,4 +158,62 @@ stop_on_errors <- function(results) {
     stop("Data checks failed; nothing was published.\n", msg, call. = FALSE)
   }
   invisible(results)
+}
+
+# One-month outliers in ESPI 2 and ESPI 5 series: compare each month with the
+# median of the five months centred on it.
+find_spikes <- function(long, min_abs = 300, min_rel = 0.4) {
+  long |>
+    dplyr::filter(indicator %in% c("ESPI2", "ESPI5")) |>
+    dplyr::mutate(mid = (num_lo + num_hi) / 2) |>
+    dplyr::arrange(indicator, district, specialty, month) |>
+    dplyr::group_by(indicator, district, specialty) |>
+    dplyr::mutate(local_median = centred_median(mid, 5)) |>
+    dplyr::ungroup() |>
+    dplyr::filter(!is.na(local_median),
+                  abs(mid - local_median) > min_abs,
+                  abs(mid - local_median) > min_rel * local_median) |>
+    dplyr::select(indicator, month, district, specialty, value = mid, local_median)
+}
+
+centred_median <- function(x, width) {
+  half <- width %/% 2
+  n <- length(x)
+  vapply(seq_len(n), function(i) {
+    w <- x[max(1, i - half):min(n, i + half)]
+    if (length(w) < 3) NA_real_ else stats::median(w)
+  }, numeric(1))
+}
+
+read_health_target_reference <- function(path = "config/reference/health_target_fsa.csv") {
+  if (!file.exists(path)) return(NULL)
+  readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols(month = "D"))
+}
+
+# The FSA health target (% waiting under four months at the end of the period)
+# should equal 100% minus the ESPI 2 share of the list. Compare wherever both
+# cover the same month; differences over 0.5 percentage points are flagged.
+check_health_target <- function(long, reference, tolerance = 0.5) {
+  name <- "Matches published FSA health target results"
+  if (is.null(reference)) {
+    return(check_result(name, "warning", data.frame(), "Not applicable: no reference file."))
+  }
+  e2 <- dplyr::filter(long, indicator == "ESPI2", month %in% reference$month)
+  if (nrow(e2) == 0) {
+    return(check_result(name, "warning", data.frame(),
+                        "Not applicable: no months in common with the published results."))
+  }
+  nat <- aggregate_counts(e2, "month") |> dplyr::mutate(area = "New Zealand")
+  dist <- aggregate_counts(e2, c("month", "district")) |> dplyr::rename(area = district)
+  ours <- dplyr::bind_rows(nat, dist) |>
+    dplyr::transmute(month, area, ours = round(100 * (1 - p_mid), 1))
+  cmp <- dplyr::inner_join(reference, ours, by = c("month", "area")) |>
+    dplyr::mutate(difference = round(ours - pct_within_4_months, 1))
+  check_result(
+    name, "warning",
+    dplyr::filter(cmp, abs(difference) > tolerance) |>
+      dplyr::select(month, area, published = pct_within_4_months, ours, difference),
+    sprintf("Compared %d published figure(s) with 100%% minus the ESPI 2 share of the list.",
+            nrow(cmp))
+  )
 }

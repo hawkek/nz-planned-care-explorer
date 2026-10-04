@@ -98,14 +98,36 @@ cost without benefit. All of these are easy to reverse.
 ## 5. The July 2026 change of data system
 
 Health NZ replaced NBRS with NBRD from 1 July 2026. Its draft dictionary shows
-different rules for ESPI 2 and 5, and no standard statistics for ESPI 1, 3 or
-8. A step in the series at July 2026 should therefore be expected until shown
+different rules for ESPI 2 and 5, and no standard statistics for ESPI 1, 3 or 8.
+A step in the series at July 2026 should therefore be expected until shown
 otherwise. The analysis, its consequences and the questions for Health NZ are
 in `docs/nbrd_transition.md`. The pipeline now fits trends and projections
 within one system only, flags months from July 2026 onward, and marks the
 change on charts.
 
-## 6. What is left for version 1
+## 6. Cross-checks and timing (added 4 October 2026)
+
+- **Health targets.** The published June 2025 first specialist assessment
+  result (62.0% waiting under four months) equals 100% minus the ESPI 2 share
+  of the list in the OIA data (62.0% to 62.1%). The tracker's headline measure
+  is therefore the complement of an official, widely quoted figure. That makes
+  it easier to explain, and a mismatch would be immediately visible. District
+  results for June 2026 are stored and checked automatically.
+- **The health target dashboard links to "current & historical detail data for
+  FSA Waitlist".** Check what that dataset holds before launch. If it already
+  gives district and specialty history, it narrows the gap the tracker fills
+  (and becomes a second source to reconcile against). If it gives district
+  history only, the specialty dimension and ESPI 5 remain distinctive.
+- **A data quality issue in the release:** Hawke's Bay, January 2025, looks
+  double-counted. Raise it with Health NZ alongside the other questions.
+- **Election timing.** Wait times are being quoted in the 2026 election
+  campaign (for example, the Health Minister citing health target results on
+  1News, 30 September 2026). Launching at the end of November, as planned,
+  would most likely fall after the election, but I have not checked the
+  election date. A launch during the campaign would raise the risk of the
+  tracker being read as partisan, however neutral its wording.
+
+## 7. What is left for version 1
 
 1. Run `fetch_espi_app()` by hand, fix the selector or reader, and commit the
    first export. Then check `reconciliation.csv` for October to December 2025.

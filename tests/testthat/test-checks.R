@@ -55,3 +55,23 @@ test_that("months after the July 2026 data system change raise a warning", {
   expect_false(row$passed)
   expect_equal(row$severity, "warning")
 })
+
+test_that("a one-month doubling is flagged as a spike", {
+  m <- seq(as.Date("2024-09-01"), by = "month", length.out = 7)
+  d <- make_long(months = m, districts = "Auckland", num = 600, den = 2000)
+  d$num_lo[4] <- d$num_hi[4] <- 1200
+  s <- find_spikes(d)
+  expect_equal(nrow(s), 1)
+  expect_equal(s$month, m[4])
+})
+
+test_that("published health target results are compared with 100% minus the ESPI 2 share", {
+  d <- make_long(months = as.Date("2025-06-01"), num = 380, den = 1000)
+  good <- tibble::tibble(month = as.Date("2025-06-01"), area = "New Zealand",
+                         pct_within_4_months = 62.0, source = "test")
+  expect_true(check_health_target(d, good)$passed)
+  bad <- dplyr::mutate(good, pct_within_4_months = 66.0)
+  expect_false(check_health_target(d, bad)$passed)
+  none <- dplyr::mutate(good, month = as.Date("2020-01-01"))
+  expect_match(check_health_target(d, none)$detail, "Not applicable")
+})

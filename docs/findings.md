@@ -9,8 +9,12 @@ the Health NZ definitions review, before using them in any launch material.
    appointment as in 2019.** In January 2019, about 10,250 patients had waited
    more than four months for a first specialist assessment. In December 2025
    the figure was about 75,200. That is 37.8% of everyone waiting for a first
-   assessment, up from 8.6%. The number peaked at about 86,000 in January 2025.
-   Over the last 24 months the national number shows no clear rise or fall.
+   assessment, up from 8.6%. The highest month was about 83,000 in early 2025.
+   (The released figure for January 2025, about 86,000, includes an apparent
+   double count in Hawke's Bay; see `docs/data_exploration.md`.) Over the last
+   24 months the national number shows no clear rise or fall. As a cross-check,
+   Health NZ's own health target result for June 2025 (62.0% waiting under four
+   months) matches this data exactly.
 
 2. **Waits for promised treatment were lower at the end of 2025 than a year
    earlier.** About 27,700 patients were waiting more than four months after
