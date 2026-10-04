@@ -79,7 +79,7 @@ Figures are reported for the 20 former district health boards, which Health NZ n
 
 ## Trends {#trends}
 
-The national charts show a smoothed trend from a generalised additive model (negative binomial, with a smooth function of time, fitted by REML in the R package mgcv), with a 95% confidence band. The trend is fitted to the midpoint of each month's suppression range. Known disruptions are shaded: COVID-19 Alert Level 4 from 26 March to 27 April 2020, and from 18 to 31 August 2021. Industrial action is not yet annotated, because its dates have not yet been checked against primary sources. Trends are fitted separately before and after the July 2026 change of data system.
+The national charts show a smoothed trend from a generalised additive model (negative binomial, with a smooth function of time, fitted by REML in the R package mgcv), with a 95% confidence band. The trend is fitted to the midpoint of each month's suppression range. Known disruptions are shaded: COVID-19 Alert Level 4 from 26 March to 27 April 2020, and from 18 to 31 August 2021 (dates checked against news and government sources; listed in the repository's `config/annotations_sources.md`). Industrial action is not yet annotated, because its dates have not yet been checked against primary sources. Trends are fitted separately before and after the July 2026 change of data system.
 
 ## Cross-check against the health targets {#health-targets}
 

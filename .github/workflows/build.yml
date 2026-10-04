@@ -1,5 +1,7 @@
 name: Build and publish
 
+# - pull request: test, run the pipeline and render the site, without
+#   publishing. The rendered site is attached to the run as "site-preview".
 # - push to main: test, rebuild from the data in the repo, publish.
 #   To update the site each quarter, add the new Health NZ waitlist extract to
 #   data/raw/health_targets_extract/<YYYY-YY-Qn>/ and push.
@@ -12,6 +14,7 @@ name: Build and publish
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
     inputs:
       fetch:
@@ -20,17 +23,17 @@ on:
         default: false
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # only used by the optional fetch to commit new data
     env:
       FETCH: ${{ github.event_name == 'workflow_dispatch' && inputs.fetch }}
     steps:
@@ -83,13 +86,29 @@ jobs:
           echo "::error::Fetching from the ESPI web tool failed. The site was not updated. See R/fetch.R and data/raw/espi_app/README.md for the manual fallback."
           exit 1
 
+      - name: Attach the rendered site for review
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: site/_site
+          retention-days: 14
+
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:
           path: site/_site
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

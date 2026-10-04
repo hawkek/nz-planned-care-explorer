@@ -7,9 +7,11 @@ and on the website comes from **Health New Zealand | Te Whatu Ora**:
   an FYI.org.nz requester.
 - The ESPI web tool, tewhatuora.shinyapps.io/ESPI_app.
 
-Health NZ licenses its website content under the
+Health NZ licenses content on its website for re-use under the
 [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/),
-excluding photos and logos.
+with exceptions for photographs, illustrations and logos, and for material
+identified as another party's copyright ([Health NZ copyright page](https://www.healthnz.govt.nz/copyright),
+checked 4 October 2026 via search results).
 
 **Still to confirm:** that the same licence applies to the ESPI web tool data and
 to the OIA release. Until Health NZ confirms this, treat the CC BY 4.0 position

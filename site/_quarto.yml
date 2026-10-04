@@ -38,6 +38,9 @@ format:
     include-in-header:
       text: |
         <meta name="color-scheme" content="light dark">
+    include-before-body:
+      text: |
+        <a class="skip-link" href="#quarto-document-content">Skip to content</a>
     include-after-body:
       text: |
         <script src="assets/d3.min.js"></script>

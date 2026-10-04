@@ -730,6 +730,9 @@
   // ---- Boot -----------------------------------------------------------------
 
   async function boot() {
+    // The skip link must be the first thing a keyboard user reaches.
+    const skip = document.querySelector(".skip-link");
+    if (skip) document.body.prepend(skip);
     load("meta.json").then((meta) => {
       const v = document.getElementById("data-version");
       if (v) v.textContent = `Waiting lists to ${monthLabel(parseMonth(meta.extract.latest_month))} (extract ${meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3")}); version ${meta.data_version}, built ${meta.built}.`;
