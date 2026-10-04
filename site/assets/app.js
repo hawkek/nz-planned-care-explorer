@@ -1,4 +1,4 @@
-/* NZ Waitlist Tracker front end.
+/* NZ Planned Care Explorer front end.
  *
  * Every number shown is computed by the R pipeline (run_pipeline.R) and read
  * from site/data/*.json. This file only lays out controls, charts and tables.
@@ -31,10 +31,12 @@
     if (lo === hi) return fmtInt(lo);
     const mid = (lo + hi) / 2;
     if ((hi - lo) / Math.max(mid, 1) <= 0.05 && mid >= 1000) {
-      const step = mid >= 10000 ? 100 : 10;
-      let rounded = Math.round(mid / step) * step;
-      // Never round to a figure outside the possible range.
-      if (rounded < lo || rounded > hi) rounded = Math.round(mid);
+      // Round as coarsely as possible without leaving the possible range.
+      let rounded = Math.round(mid);
+      for (const step of mid >= 10000 ? [100, 10, 1] : [10, 1]) {
+        const r = Math.round(mid / step) * step;
+        if (r >= lo && r <= hi) { rounded = r; break; }
+      }
       return `about ${fmtInt(rounded)}`;
     }
     return fmtRange(lo, hi);
@@ -111,9 +113,9 @@
   }
 
   // A card: takeaway sentence, optional subtitle, responsive chart, legend, table.
-  function card({ takeaway, sub, draw, legendItems, table, alt }) {
+  function card({ takeaway, sub, draw, legendItems, table, alt, primary }) {
     const chart = el("div", { class: "chart", role: "img", "aria-label": alt || takeaway });
-    const c = el("section", { class: "card-viz" },
+    const c = el("section", { class: primary ? "card-viz primary" : "card-viz" },
       el("p", { class: "takeaway" }, takeaway),
       sub ? el("p", { class: "chart-sub", html: sub }) : null,
       chart,
@@ -146,10 +148,14 @@
   // ---- Chart builders -------------------------------------------------------
 
   const plotStyle = () => ({ background: "transparent", color: css("--text-secondary"), fontSize: "12px", overflow: "visible" });
-  const chartHeight = (w) => (w < 480 ? 240 : 300);
+  const chartHeight = (w, big) => (big ? (w < 480 ? 280 : 380) : (w < 480 ? 230 : 290));
+  const labelWidth = (labels) => Math.max(0, ...labels.map((t) => String(t).length)) * 6.6 + 12;
 
-  function lineChart(w, { series, isPct, trend, annotations, yLabel, projection, fitted, targetLine, compare }) {
-    const s1 = css("--series-1"), ink = css("--text-primary"), muted = css("--text-muted");
+  // Line chart with optional comparison lines, target rule and direct labels
+  // at the right-hand end, so lines are identified by label and line style as
+  // well as colour.
+  function lineChart(w, { series, isPct, trend, annotations, yLabel, projection, fitted, targetLine, compare, label, big }) {
+    const s1 = css("--series-1"), ink = css("--text-primary"), muted = css("--text-muted"), accent = css("--accent");
     // Missing values (e.g. a district that did not report) become gaps, never zero.
     const val = (d) => {
       const a = isPct ? d.plo : d.nlo, b = isPct ? d.phi : d.nhi;
@@ -163,8 +169,8 @@
       marks.push(Plot.rect([a], { x1: (d) => new Date(d.start), x2: (d) => new Date(d.end), fill: css("--annotation") }));
     }
     if (trend) {
-      marks.push(Plot.areaY(series, { x: "date", y1: "flo", y2: "fhi", fill: muted, fillOpacity: 0.15 }));
-      marks.push(Plot.lineY(series, { x: "date", y: "fit", stroke: muted, strokeWidth: 1.5 }));
+      marks.push(Plot.areaY(series, { x: "date", y1: "flo", y2: "fhi", fill: css("--trend"), fillOpacity: 0.14 }));
+      marks.push(Plot.lineY(series, { x: "date", y: "fit", stroke: css("--trend"), strokeWidth: 1.5 }));
     }
     if (projection) {
       marks.push(Plot.areaY(projection, { x: "date", y1: "lo", y2: "hi", fill: s1, fillOpacity: 0.12 }));
@@ -172,15 +178,31 @@
     }
     if (fitted) marks.push(Plot.lineY(fitted, { x: "date", y: "fit", stroke: muted, strokeWidth: 1.5 }));
     // Comparison series (same units only): drawn underneath, in muted ink.
+    const endLabels = [];
     for (const c of compare || []) {
-      marks.push(Plot.lineY(c.series, { x: "date", y: val, stroke: c.stroke, strokeWidth: 1.5 }));
+      marks.push(Plot.lineY(c.series, { x: "date", y: val, stroke: c.stroke || css("--series-2"), strokeWidth: 1.5 }));
+      const cl = c.series.filter((d) => !Number.isNaN(val(d))).pop();
+      if (cl) endLabels.push({ date: cl.date, y: val(cl), text: c.label, fill: css("--text-secondary") });
     }
     marks.push(Plot.areaY(series, { x: "date", y1: lo, y2: hi, fill: s1, fillOpacity: 0.25 }));
     marks.push(Plot.lineY(series, { x: "date", y: val, stroke: s1, strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }));
     marks.push(Plot.ruleY([0], { stroke: css("--axis") }));
-    if (targetLine != null) marks.push(Plot.ruleY([targetLine], { stroke: css("--text-secondary"), strokeWidth: 1 }));
+    if (targetLine != null) {
+      marks.push(Plot.ruleY([targetLine], { stroke: accent, strokeWidth: 1.5, strokeDasharray: "5,4" }));
+      endLabels.push({ date: series[series.length - 1].date, y: targetLine, text: `Target ${Math.round(targetLine * 100)}%`, fill: css("--text-secondary") });
+    }
     const last = series.filter((d) => !Number.isNaN(val(d))).pop();
     if (last) marks.push(Plot.dot([last], { x: "date", y: val, r: 4, fill: s1, stroke: css("--surface-1"), strokeWidth: 2 }));
+    if (last && label) endLabels.push({ date: last.date, y: val(last), text: label, fill: ink, weight: 600 });
+    // Nudge end labels apart vertically so they do not overlap.
+    const h = chartHeight(w, big);
+    const yMax = isPct ? 1 : Math.max(...series.map((d) => (Number.isNaN(val(d)) ? 0 : hi(d) || 0)), ...(compare || []).flatMap((c) => c.series.map((d) => (Number.isNaN(val(d)) ? 0 : val(d)))), targetLine || 0);
+    const minGap = (14 / Math.max(1, h - 50)) * yMax;
+    endLabels.sort((a, b) => b.y - a.y).forEach((l, i, arr) => { l.ly = i === 0 ? l.y : Math.min(l.y, arr[i - 1].ly - minGap); });
+    const marginRight = endLabels.length ? Math.min(w * 0.32, labelWidth(endLabels.map((l) => l.text))) : 16;
+    for (const l of endLabels) {
+      marks.push(Plot.text([l], { x: "date", y: "ly", text: "text", dx: 8, textAnchor: "start", fill: l.fill, fontWeight: l.weight || 400, fontSize: 12 }));
+    }
     marks.push(Plot.ruleX(series, Plot.pointerX({ x: "date", stroke: css("--axis") })));
     const cmpAt = (d) => (compare || []).map((c) => {
       const r = c.series.find((x) => x.date.getTime() === d.date.getTime());
@@ -192,7 +214,7 @@
         (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d),
     })));
     return Plot.plot({
-      width: w, height: chartHeight(w), marginLeft: isPct ? 44 : 56, marginRight: 16, style: plotStyle(),
+      width: w, height: h, marginLeft: isPct ? 44 : 56, marginRight, style: plotStyle(),
       x: { type: "utc", label: null, ticks: w < 480 ? 4 : 7 },
       y: { label: yLabel, grid: true, zero: true, domain: isPct ? [0, 1] : undefined, tickFormat: isPct ? (d) => `${Math.round(d * 100)}%` : "~s" },
       marks,
@@ -223,7 +245,7 @@
           text: (r) => (isPct ? fmtPctRange(r[lo], r[hi]) : fmtRange(r[lo], r[hi])),
         }),
         Plot.ruleX([0], { stroke: css("--axis") }),
-        ...(target != null ? [Plot.ruleX([target], { stroke: css("--text-secondary"), strokeWidth: 1 })] : []),
+        ...(target != null ? [Plot.ruleX([target], { stroke: css("--accent"), strokeWidth: 1.5, strokeDasharray: "5,4" })] : []),
         Plot.tip(rows, Plot.pointerY({ y: label, x: hi, title: tip })),
       ],
     });
@@ -319,6 +341,7 @@
 
   // ---- Pages ----------------------------------------------------------------
 
+  let META = null;
   const MEASURES = [["FSA", "First specialist assessment"], ["Treatment", "Planned treatment"]];
   const MEASURE_FILE = { FSA: "explore_fsa.json", Treatment: "explore_treatment.json" };
   const MEASURE_NOUN = { FSA: "a first specialist assessment", Treatment: "planned treatment" };
@@ -366,6 +389,7 @@
   async function pageHome() {
     const [meta, findings, fsa, tx] = await Promise.all([load("meta.json"), load("findings.json"), load(MEASURE_FILE.FSA), load(MEASURE_FILE.Treatment)]);
     const ex = { FSA: fsa, Treatment: tx };
+    META = meta;
     const ann = annIn(meta.annotations.filter((a) => a.scope === "National"), fsa.months);
     const f = document.getElementById("findings");
     if (f) renderFindings(f, findings, ex, ann);
@@ -376,15 +400,18 @@
   }
 
   function renderFindings(root, findings, ex, ann) {
-    root.replaceChildren(...findings.map((fd, i) => {
-      const head = el("h3", { class: "finding-title" }, `${i + 1}. ${fd.title}`);
+    const vintage = (s) => s.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3");
+    root.replaceChildren(el("p", { class: "meta-line" },
+      `Source: Health NZ waitlist extract ${vintage(META.extract.latest_vintage)}. Counts of 1 to 4 are suppressed by Health NZ, so some totals are ranges. `,
+      el("a", { href: `${OFFSET}methods.html#measures` }, "Definitions and methods")), ...findings.map((fd, i) => {
+      const head = el("h3", { class: "finding-title" }, el("span", { class: "finding-num" }, `${i + 1}`), fd.title);
       if (fd.bars) {
         const bars = fd.bars.map((b) => ({ ...b }));
         return el("div", { class: "finding" }, head, card({
           takeaway: fd.text,
           draw: (w) => barChart(w, bars, { label: "d", lo: "ulo", hi: "uhi", isPct: true, target: 0.95, xmax: 1,
             tip: (r) => `${r.d}\n${fmtPctRange(r.ulo, r.uhi, 1)} waiting under four months` }),
-          legendItems: [["band", css("--series-1"), "Share waiting under four months"], ["", css("--text-secondary"), "Health target: 95% by 2030"]],
+          legendItems: [["band", css("--series-1"), "Share waiting under four months"], ["dash", css("--accent"), "Health target: 95% by 2030"]],
           table: dataTable([{ label: "District", value: (r) => r.d }, { label: "Waiting under four months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1) }], bars),
         }));
       }
@@ -392,7 +419,7 @@
       const rows = explorerRows(x, fd.series).map((r, j) => ({ ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] }));
       return el("div", { class: "finding" }, head, card({
         takeaway: fd.text,
-        draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting over 4 months" }),
+        draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting over 4 months", label: "New Zealand" }),
         legendItems: [["", css("--series-1"), "Waiting more than four months"], ["", css("--text-muted"), "Smoothed trend with 95% interval"], ...annLegend(ann)],
         table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) }], rows.filter((r) => r.nlo != null).reverse()),
       }));
@@ -468,7 +495,8 @@
       const trendRows = rows.map((r, j) => (isNZAll ? { ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] } : r));
       const countCard = card({
         takeaway: `People in ${where} who had waited more than four months for ${MEASURE_NOUN[measure]}, by month.`,
-        draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People" }),
+        primary: true,
+        draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People", label: area, big: true }),
         legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...annLegend(ann)],
         table: null,
       });
@@ -477,9 +505,9 @@
       const pctCard = card({
         takeaway: `Share of everyone waiting in ${where} who had waited less than four months${hasCmp ? `, compared with ${cmpLabel}` : ""}.`,
         sub: cmpArea && !hasCmp ? `${cmpLabel} has no data for this list.` : null,
-        draw: (w) => lineChart(w, { series: pctRows, isPct: true, annotations: ann, yLabel: "Waiting under 4 months", targetLine: 0.95,
-          compare: hasCmp ? [{ series: cmpPct, stroke: css("--text-muted"), label: cmpLabel }] : [] }),
-        legendItems: [["", css("--series-1"), where], ...(hasCmp ? [["", css("--text-muted"), cmpLabel]] : []), ["", css("--text-secondary"), "Health target: 95% by 2030"]],
+        draw: (w) => lineChart(w, { series: pctRows, isPct: true, annotations: ann, yLabel: "Waiting under 4 months", targetLine: 0.95, label: area,
+          compare: hasCmp ? [{ series: cmpPct, label: cmpArea }] : [] }),
+        legendItems: [["", css("--series-1"), where], ...(hasCmp ? [["thin", css("--series-2"), cmpLabel]] : []), ["dash", css("--accent"), "Health target: 95% by 2030"]],
       });
 
       const tableCols = [
@@ -494,7 +522,7 @@
         el("p", {}, el("button", { type: "button", class: "btn-link", onclick: () => downloadCsv(`waitlist_${measure}_${area}_${spec}.csv`.replace(/[^\w.-]+/g, "_"), tableCols, shown) }, "Download this selection (CSV)")));
 
       const vintage = meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3");
-      const note = el("p", { class: "chart-sub" }, `Source: Health NZ waitlist extract ${vintage}, ${monthLabel(parseMonth(x.months[0]))} to ${monthLabel(parseMonth(x.months[x.months.length - 1]))}. Historical figures may be revised by Health NZ; `,
+      const note = el("p", { class: "meta-line" }, `Source: Health NZ waitlist extract ${vintage}, ${monthLabel(parseMonth(x.months[0]))} to ${monthLabel(parseMonth(x.months[x.months.length - 1]))}. Historical figures may be revised by Health NZ; `,
         el("a", { href: `${OFFSET}methods.html#revisions` }, "see revisions"), ".");
       body.replaceChildren(tiles, note, countCard, pctCard, tableBlock, breakdown());
 
@@ -521,7 +549,7 @@
               target: isShare ? 0.95 : null, xmax: isShare ? 1 : null, highlight: area,
               tip: (r) => `${r.label}\n${fmtRange(r.nlo, r.nhi)} waited over 4 months\n${fmtPctRange(r.ulo, r.uhi)} waiting under 4 months`,
             }),
-            legendItems: [["band", css("--series-1"), isShare ? "Share under four months" : "People"], ["band", css("--wash"), "Range from suppressed small counts"], ...(isShare ? [["", css("--text-secondary"), "Health target: 95%"]] : [])],
+            legendItems: [["band", css("--series-1"), isShare ? "Share under four months" : "People"], ["band", css("--wash"), "Range from suppressed small counts"], ...(isShare ? [["dash", css("--accent"), "Health target: 95%"]] : [])],
             table: dataTable([
               { label: spec === "All" && area !== "New Zealand" ? "Specialty" : "District", value: (r) => r.label },
               { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) },

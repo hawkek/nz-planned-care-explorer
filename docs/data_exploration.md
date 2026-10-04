@@ -212,7 +212,7 @@ The plan's premise was that only the latest 12 months are public. **That is
 no longer true:** Health NZ publishes the FSA and elective waitlists by
 district and specialty back to 2015, updated quarterly, together with an
 interactive dashboard of district, region and ethnicity results. What remains
-distinctive about the tracker:
+distinctive about the explorer:
 
 - **ESPI 1, 3 and 8** history, which is only in the OIA release.
 - **Specialty-level exploration.** The health target dashboard shows district,

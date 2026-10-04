@@ -28,3 +28,7 @@ test_that("takeaways never mention blame words", {
 test_that("rounded figures stay inside the possible range", {
   expect_equal(fmt_count_range(5732, 5735), "about 5,734")
 })
+
+test_that("rounding falls back to a finer step that stays in range", {
+  expect_equal(fmt_count_range(66633, 66678), "about 66,660")
+})

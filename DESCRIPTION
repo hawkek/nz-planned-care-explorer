@@ -1,5 +1,5 @@
-Package: nzwaitlist
-Title: NZ Waitlist Tracker Pipeline
+Package: nzplannedcare
+Title: NZ Planned Care Explorer Pipeline
 Version: 0.1.0
 Description: Reads Health NZ elective services patient flow indicator (ESPI)
     data, checks it, models trends and builds the data for a static website.

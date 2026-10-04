@@ -134,7 +134,7 @@ reproduction is allowed only if "the information must not be used for
 commercial gain, must not be distorted or changed". The two are not compatible.
 This makes confirming the licence for the data itself more important, not less.
 
-## What this means for the tracker
+## What this means for the explorer
 
 1. **The first live download matters more than before.** The web tool's latest
    12 months will cover roughly October 2025 to August or September 2026. If

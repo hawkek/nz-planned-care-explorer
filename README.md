@@ -1,8 +1,10 @@
-# NZ Waitlist Tracker
+# NZ Planned Care Explorer
 
-A free, open-source tracker of New Zealand hospital waitlists since January
-2019, by district and specialty, built on Health NZ's elective services patient
-flow indicators (ESPI).
+*Formerly "NZ Waitlist Tracker". Renamed in October 2026 because "tracker"
+suggested it could estimate an individual's wait, which the data cannot do.*
+
+A free, open-source explorer of New Zealand public hospital planned-care
+waiting lists by district and specialty, month by month since July 2015.
 
 Health NZ's ESPI web tool shows the latest 12 months. In March 2026 Health NZ
 released the ESPI history from January 2019 to December 2025 under the Official

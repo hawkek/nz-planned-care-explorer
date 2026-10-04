@@ -16,7 +16,7 @@ to the OIA release. Until Health NZ confirms this, treat the CC BY 4.0 position
 as an assumption.
 
 Attribution to use: "Source: Health New Zealand | Te Whatu Ora, elective services
-patient flow indicators (provisional). Compiled by NZ Waitlist Tracker, an
+patient flow indicators (provisional). Compiled by NZ Planned Care Explorer, an
 independent project not endorsed by Health NZ."
 
 Small counts (1 to 4) were withheld by Health NZ under section 9(2)(a) of the

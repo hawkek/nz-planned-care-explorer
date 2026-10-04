@@ -6,9 +6,10 @@ project:
     - downloads/*.csv
     - assets/*.js
     - assets/*.txt
+    - assets/fonts/*
 
 website:
-  title: "NZ Waitlist Tracker"
+  title: "NZ Planned Care Explorer"
   description: "Independent tracker of New Zealand hospital waitlists since 2019, by district and specialty, using Health NZ ESPI data."
   navbar:
     left:
@@ -29,6 +30,7 @@ website:
 format:
   html:
     theme: [cosmo, assets/theme.scss]
+    css: assets/fonts.css
     toc: false
     page-layout: article
     smooth-scroll: false

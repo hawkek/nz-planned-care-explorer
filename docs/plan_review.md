@@ -183,6 +183,29 @@ Still open for you to decide:
   a few target users whether it answers specialty-level history questions more
   easily.
 
+### Rename and design (4 October 2026)
+
+- The site is now "NZ Planned Care Explorer".
+- The visual design follows your brief: warm off-white page, ink-blue text,
+  teal primary series, slate comparison, terracotta for the target line,
+  annotations and caveats only; Source Serif 4 headings and Inter body text,
+  self-hosted (no third-party font requests).
+- Fewer boxes: one white card for the main explorer chart, a strip of
+  headline figures, and source, vintage and suppression in a visible "meta
+  line".
+- Lines carry direct end labels, and the target line is dashed, so
+  comparisons do not rely on colour.
+- One deviation from the brief: the comparison slate is #7E93A8 rather than
+  #657F98, because #657F98 is too close to the teal to tell apart (validator:
+  normal-vision delta E 9.6 against a floor of 15). The dark-mode equivalents
+  were chosen and checked the same way.
+- The Q4 2025/26 factsheet, data caveats and ethnicity/rurality results are
+  kept in `docs/references/`. They confirm the treatment measure is "people
+  given a commitment to treatment", and explain the small treatment district
+  differences: different extraction dates (3 August for the published results,
+  2 September for the extract), and unknown ethnicity being excluded from the
+  breakdowns.
+
 ## 8. What is left for version 1
 
 1. Run `fetch_espi_app()` by hand, fix the selector or reader, and commit the
