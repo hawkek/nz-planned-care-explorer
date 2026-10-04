@@ -54,7 +54,7 @@ docs/                data exploration, plan review, draft findings
 
 Requirements: R 4.3 or later with `dplyr, jsonlite, lubridate, MASS, mgcv, readr,
 readxl, tibble` (plus `testthat` for tests), and
-[Quarto](https://quarto.org) 1.6 or later.
+[Quarto](https://quarto.org) (tested with 1.6.42 and 1.11.5).
 
 ```sh
 Rscript tests/testthat.R          # unit tests
