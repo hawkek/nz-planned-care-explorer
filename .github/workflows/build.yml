@@ -1,8 +1,10 @@
 name: Build and publish
 
 # - push to main: test, rebuild from the data in the repo, publish.
-# - monthly schedule (or manual run): also fetch from the ESPI web tool and
-#   commit the new raw download and processed data.
+#   To update the site each quarter, add the new Health NZ waitlist extract to
+#   data/raw/health_targets_extract/<YYYY-YY-Qn>/ and push.
+# - manual run with "fetch" ticked: also try the (untested) ESPI web tool
+#   download and commit what it saves.
 # If a data check fails, nothing is published and the last good site stays
 # live. If the fetch fails, the run is marked failed (GitHub emails the repo
 # owner) and nothing is published.
@@ -10,15 +12,12 @@ name: Build and publish
 on:
   push:
     branches: [main]
-  schedule:
-    # 15th of each month, 21:17 UTC (about 9 or 10 am next day in New Zealand).
-    - cron: "17 21 15 * *"
   workflow_dispatch:
     inputs:
       fetch:
         description: "Fetch from the ESPI web tool"
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write
@@ -33,7 +32,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      FETCH: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.fetch) }}
+      FETCH: ${{ github.event_name == 'workflow_dispatch' && inputs.fetch }}
     steps:
       - uses: actions/checkout@v4
 

@@ -132,7 +132,58 @@ change on charts.
   election date. A launch during the campaign would raise the risk of the
   tracker being read as partisan, however neutral its wording.
 
-## 7. What is left for version 1
+## 7. Layout C and the second ChatGPT review (4 October 2026)
+
+The site now follows layout C:
+
+- a home page with three findings written by the pipeline;
+- an explorer (list, area, specialty, compare with New Zealand or another
+  district; count and share-under-four-months charts; breakdown; CSV of the
+  selection);
+- a district comparison;
+- ESPI 1, 3 and 8 on a separate "More indicators" page.
+
+The source is the four quarterly health target extracts, treated as vintages.
+The latest drives the site, and the others feed a revisions log.
+
+The second ChatGPT review recommends an explorer-only version 1. Most of its
+brief was already in place:
+
+- extracts as the source, kept unchanged, with quarterly updates;
+- suppression as intervals;
+- vintages and a revisions log;
+- validation against the Q4 results;
+- a static site with no Shiny server.
+
+Points adopted from it:
+
+- comparison against New Zealand or a selected district (on the share chart,
+  where the units match);
+- the highest value in the history;
+- the source extract stated next to the charts;
+- a national mismatch with the published health target is now an error that
+  stops publishing (districts remain warnings, because two treatment districts
+  differ by up to 0.2 points).
+
+Points not adopted, and why:
+
+- targets, renv, janitor and Plotly (see section 3; switching now would cost
+  more than it returns);
+- a long "wait_duration_category" table (the wide form with low and high
+  bounds is equivalent and simpler);
+- dropping the three findings and the district comparison (you chose C).
+
+Still open for you to decide:
+
+- whether to keep the district comparison and the More indicators page in
+  version 1 (ChatGPT recommends dropping both);
+- the name ("NZ Planned Care Explorer" is more accurate than "NZ Waitlist
+  Tracker");
+- the stop/go test: put the explorer next to Health NZ's own reporting and ask
+  a few target users whether it answers specialty-level history questions more
+  easily.
+
+## 8. What is left for version 1
 
 1. Run `fetch_espi_app()` by hand, fix the selector or reader, and commit the
    first export. Then check `reconciliation.csv` for October to December 2025.

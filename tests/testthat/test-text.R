@@ -24,3 +24,7 @@ test_that("takeaways never mention blame words", {
                           "more than four months, 20 fewer than in December 2024."))
   expect_false(grepl("fail|poor|worse|better|blame", txt, ignore.case = TRUE))
 })
+
+test_that("rounded figures stay inside the possible range", {
+  expect_equal(fmt_count_range(5732, 5735), "about 5,734")
+})

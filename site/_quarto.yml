@@ -13,18 +13,14 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: National
-      - href: district.qmd
-        text: My district
-      - href: specialty.qmd
-        text: Specialties
-      - href: compare.qmd
-        text: District comparison
+        text: Waiting lists
+      - href: context.qmd
+        text: More indicators
       - href: methods.qmd
         text: Methods and data
   page-footer:
     left: |
-      Data: Health New Zealand | Te Whatu Ora (ESPI web tool and OIA release HNZ00201361).
+      Data: Health New Zealand | Te Whatu Ora (health target waitlist extracts; OIA release HNZ00201361).
       Independent project, not endorsed by Health NZ. Not medical advice.
       <span id="data-version"></span>
     right: |

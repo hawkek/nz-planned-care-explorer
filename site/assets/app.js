@@ -30,9 +30,12 @@
   function headline(lo, hi) {
     if (lo === hi) return fmtInt(lo);
     const mid = (lo + hi) / 2;
-    if ((hi - lo) / Math.max(mid, 1) <= 0.02 && mid >= 1000) {
+    if ((hi - lo) / Math.max(mid, 1) <= 0.05 && mid >= 1000) {
       const step = mid >= 10000 ? 100 : 10;
-      return `about ${fmtInt(Math.round(mid / step) * step)}`;
+      let rounded = Math.round(mid / step) * step;
+      // Never round to a figure outside the possible range.
+      if (rounded < lo || rounded > hi) rounded = Math.round(mid);
+      return `about ${fmtInt(rounded)}`;
     }
     return fmtRange(lo, hi);
   }
@@ -145,7 +148,7 @@
   const plotStyle = () => ({ background: "transparent", color: css("--text-secondary"), fontSize: "12px", overflow: "visible" });
   const chartHeight = (w) => (w < 480 ? 240 : 300);
 
-  function lineChart(w, { series, isPct, trend, annotations, yLabel, projection, fitted, targetLine }) {
+  function lineChart(w, { series, isPct, trend, annotations, yLabel, projection, fitted, targetLine, compare }) {
     const s1 = css("--series-1"), ink = css("--text-primary"), muted = css("--text-muted");
     // Missing values (e.g. a district that did not report) become gaps, never zero.
     const val = (d) => {
@@ -168,17 +171,25 @@
       marks.push(Plot.lineY(projection, { x: "date", y: "fit", stroke: s1, strokeWidth: 2, strokeDasharray: "5,4" }));
     }
     if (fitted) marks.push(Plot.lineY(fitted, { x: "date", y: "fit", stroke: muted, strokeWidth: 1.5 }));
+    // Comparison series (same units only): drawn underneath, in muted ink.
+    for (const c of compare || []) {
+      marks.push(Plot.lineY(c.series, { x: "date", y: val, stroke: c.stroke, strokeWidth: 1.5 }));
+    }
     marks.push(Plot.areaY(series, { x: "date", y1: lo, y2: hi, fill: s1, fillOpacity: 0.25 }));
     marks.push(Plot.lineY(series, { x: "date", y: val, stroke: s1, strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }));
-    if (targetLine != null) marks.push(Plot.ruleY([targetLine], { stroke: css("--axis") }));
-    else marks.push(Plot.ruleY([0], { stroke: css("--axis") }));
+    marks.push(Plot.ruleY([0], { stroke: css("--axis") }));
+    if (targetLine != null) marks.push(Plot.ruleY([targetLine], { stroke: css("--text-secondary"), strokeWidth: 1 }));
     const last = series.filter((d) => !Number.isNaN(val(d))).pop();
     if (last) marks.push(Plot.dot([last], { x: "date", y: val, r: 4, fill: s1, stroke: css("--surface-1"), strokeWidth: 2 }));
     marks.push(Plot.ruleX(series, Plot.pointerX({ x: "date", stroke: css("--axis") })));
+    const cmpAt = (d) => (compare || []).map((c) => {
+      const r = c.series.find((x) => x.date.getTime() === d.date.getTime());
+      return r && !Number.isNaN(val(r)) ? `\n${c.label}: ${isPct ? fmtPctRange(r.plo, r.phi, 1) : fmtRange(r.nlo, r.nhi)}` : "";
+    }).join("");
     marks.push(Plot.tip(series, Plot.pointerX({
       x: "date", y: val,
       title: (d) => `${monthLabel(d.date)}\n${Number.isNaN(val(d)) ? "Not reported" : isPct ? fmtPctRange(d.plo, d.phi, 1) : fmtRange(d.nlo, d.nhi) + " patients"}` +
-        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : ""),
+        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d),
     })));
     return Plot.plot({
       width: w, height: chartHeight(w), marginLeft: isPct ? 44 : 56, marginRight: 16, style: plotStyle(),
@@ -188,7 +199,7 @@
     });
   }
 
-  function barChart(w, rows, { label, lo, hi, isPct, tip }) {
+  function barChart(w, rows, { label, lo, hi, isPct, tip, target, xmax, highlight }) {
     const s1 = css("--series-1");
     const bar = Math.min(24, 18);
     const height = Math.max(120, rows.length * (bar + 10) + 40);
@@ -201,16 +212,18 @@
     const order = rows.map((r) => r[label]);
     return Plot.plot({
       width: w, height, marginLeft, marginRight: 56, style: plotStyle(),
-      x: { grid: true, label: null, tickFormat: isPct ? (d) => `${Math.round(d * 100)}%` : "~s", ticks: w < 480 ? 3 : 6 },
+      x: { grid: true, label: null, domain: xmax ? [0, xmax] : undefined, tickFormat: isPct ? (d) => `${Math.round(d * 100)}%` : "~s", ticks: w < 480 ? 3 : 6 },
       y: { domain: order, label: null, tickSize: 0, padding: 0.35, tickFormat: short },
       marks: [
-        Plot.barX(rows, { y: label, x: lo, fill: s1, rx: 4, insetTop: 0, insetBottom: 0 }),
+        // The selected area keeps full colour; others are lighter, so it stands out.
+        Plot.barX(rows, { y: label, x: lo, fill: s1, fillOpacity: (r) => (!highlight || highlight === "New Zealand" || r[label] === highlight ? 1 : 0.55), rx: 4, insetTop: 0, insetBottom: 0 }),
         Plot.barX(rows, { y: label, x1: lo, x2: hi, fill: s1, fillOpacity: 0.35 }),
         Plot.text(rows, {
           y: label, x: hi, dx: 6, textAnchor: "start", fill: css("--text-secondary"),
-          text: (r) => (isPct ? fmtPctRange(r[lo] ?? r.plo, r[hi] ?? r.phi) : fmtRange(r[lo], r[hi])),
+          text: (r) => (isPct ? fmtPctRange(r[lo], r[hi]) : fmtRange(r[lo], r[hi])),
         }),
         Plot.ruleX([0], { stroke: css("--axis") }),
+        ...(target != null ? [Plot.ruleX([target], { stroke: css("--text-secondary"), strokeWidth: 1 })] : []),
         Plot.tip(rows, Plot.pointerY({ y: label, x: hi, title: tip })),
       ],
     });
@@ -262,7 +275,7 @@
       el("p", { class: "delta" }, changeText(now, yearEarlier(series), isPct)),
       isPct ? null : el("p", { class: "delta" }, sinceStartText(series)),
       rank ? el("p", { class: "delta" },
-        el("a", { href: `${OFFSET}compare.html`, title: "How districts compare" },
+        el("a", { href: `${OFFSET}index.html#comparison`, title: "How districts compare" },
           `${ordinal(rank.rank)} smallest share of ${rank.of} districts`),
         ` (${fmtPctRange(now.plo, now.phi)} of the list)`) : null);
   }
@@ -306,144 +319,245 @@
 
   // ---- Pages ----------------------------------------------------------------
 
-  async function pageNational(root) {
-    const [meta, nat] = await Promise.all([load("meta.json"), load("national.json")]);
-    const ann = meta.annotations.filter((a) => a.scope === "National");
-    const tiles = el("div", { class: "tiles" },
-      ["ESPI2", "ESPI5"].map((c) => tile(meta, c, withDates(nat[c].series))));
-    root.append(tiles,
-      el("h2", {}, "Waiting more than four months"),
-      indicatorCard(meta, "ESPI2", nat.ESPI2, { annotations: ann }),
-      indicatorCard(meta, "ESPI5", nat.ESPI5, { annotations: ann }),
-      el("h2", {}, "Context: referrals, thresholds and prioritisation"),
-      el("p", {}, "These help interpret the headline measures. If fewer referrals are accepted, the waitlist can shrink without anyone being seen sooner."),
-      indicatorCard(meta, "ESPI1", nat.ESPI1, { annotations: ann }),
-      indicatorCard(meta, "ESPI3", nat.ESPI3, { annotations: ann }),
-      indicatorCard(meta, "ESPI8", nat.ESPI8, { annotations: ann }));
-  }
+  const MEASURES = [["FSA", "First specialist assessment"], ["Treatment", "Planned treatment"]];
+  const MEASURE_FILE = { FSA: "explore_fsa.json", Treatment: "explore_treatment.json" };
+  const MEASURE_NOUN = { FSA: "a first specialist assessment", Treatment: "planned treatment" };
 
-  async function pageDistrict(root) {
-    const [meta, dd] = await Promise.all([load("meta.json"), load("districts.json")]);
-    const names = Object.keys(dd.districts);
-    let district = names.includes(hashState().get("district")) ? hashState().get("district") : names[0];
-    let specInd = "ESPI2";
-    const body = el("div");
-    const controls = el("div", { class: "controls" },
-      selectControl("District", names, district, (v) => { district = v; setHash("district", v); draw(); }));
-    root.append(controls, body);
-
-    function draw() {
-      const d = dd.districts[district];
-      const auck = ["Auckland", "Waitemata", "Counties Manukau"].includes(district);
-      const ann = meta.annotations.filter((a) => a.scope === "National" || (auck && a.scope === "Auckland region"));
-      const specCard = el("div");
-      const drawSpec = () => {
-        const block = d.specialties[specInd];
-        const rows = block.rows.filter((r) => r.nhi > 0);
-        specCard.replaceChildren(rows.length === 0 ? el("p", { class: "takeaway" }, block.takeaway) : card({
-          takeaway: block.takeaway,
-          sub: `<a href="${defLink(specInd)}">${DISPLAY[specInd]}</a>, ${monthLabel(parseMonth(dd.latest))}. Specialties with none waiting are not shown.`,
-          draw: (w) => barChart(w, rows, {
-            label: "s", lo: "nlo", hi: "nhi",
-            tip: (r) => `${r.s}\n${fmtRange(r.nlo, r.nhi)} patients\n${fmtPctRange(r.plo, r.phi)} of the list` + (r.prevlo != null ? `\nA year earlier: ${fmtRange(r.prevlo, r.prevhi)}` : ""),
-          }),
-          legendItems: [["band", css("--series-1"), "Patients"], ["band", css("--wash"), "Range where counts of 1 to 4 are suppressed"]],
-          table: dataTable([
-            { label: "Specialty", value: (r) => r.s },
-            { label: "Patients", value: (r) => fmtRange(r.nlo, r.nhi) },
-            { label: "Share of list", value: (r) => fmtPctRange(r.plo, r.phi) },
-            { label: "A year earlier", value: (r) => (r.prevlo == null ? "not reported" : fmtRange(r.prevlo, r.prevhi)) },
-          ], block.rows),
-        }));
+  // Rows for one explorer series. Months with no data are omitted from tables
+  // and become gaps in charts, never zeros.
+  function explorerRows(ex, key) {
+    const s = ex.series[key];
+    if (!s) return [];
+    return ex.months.map((m, i) => {
+      if (s.o[i] == null) return { m, date: parseMonth(m), nlo: null, nhi: null, plo: null, phi: null };
+      const nlo = s.o[i], nhi = s.o[i] + s.od[i], tlo = s.t[i], thi = s.t[i] + s.td[i];
+      const plo = thi > 0 ? nlo / thi : null, phi = tlo > 0 ? Math.min(1, nhi / tlo) : null;
+      return {
+        m, date: parseMonth(m), nlo, nhi, tlo, thi, plo, phi,
+        // Share waiting under four months (the health target measure).
+        ulo: phi == null ? null : 1 - phi, uhi: plo == null ? null : 1 - plo,
       };
-      drawSpec();
-      body.replaceChildren(
-        el("div", { class: "tiles" }, ["ESPI2", "ESPI5"].filter((c) => d.indicators[c]).map((c) => tile(meta, c, withDates(d.indicators[c].series), (d.ranks || {})[c]))),
-        el("h2", {}, `Trends in ${district}`),
-        ...["ESPI2", "ESPI5"].filter((c) => d.indicators[c]).map((c) => indicatorCard(meta, c, d.indicators[c], { annotations: ann })),
-        el("h2", {}, `Specialties in ${district}`),
-        el("div", { class: "controls" }, segmented("Measure", [["ESPI2", "First assessment"], ["ESPI5", "Treatment"]], specInd, (v) => { specInd = v; drawSpec(); })),
-        specCard,
-        el("h2", {}, "Referral processing"),
-        d.indicators.ESPI1 ? indicatorCard(meta, "ESPI1", d.indicators.ESPI1, { annotations: ann }) : null);
-    }
-    draw();
+    });
   }
 
-  async function pageSpecialty(root) {
-    const [meta, sp] = await Promise.all([load("meta.json"), load("specialties.json")]);
-    let code = hashState().get("measure") === "ESPI5" ? "ESPI5" : "ESPI2";
-    let specialty = hashState().get("specialty");
-    let measure = "count";
+  const latestRow = (rows) => rows.filter((r) => r.nlo != null).pop();
+  // Only annotations that fall inside the data shown get a legend entry.
+  const annIn = (ann, months) => ann.filter((a) => new Date(a.start) <= parseMonth(months[months.length - 1]) && new Date(a.end) >= parseMonth(months[0]));
+  const annLegend = (ann) => (ann.length ? [["band", css("--annotation"), ann.map((a) => a.label).join("; ")]] : []);
+  const midP = (r) => (r.plo + r.phi) / 2;
+
+  function rankOf(ex, area, spec) {
+    const latest = ex.months.length - 1;
+    const shares = ex.areas.filter((a) => a !== "New Zealand").map((a) => {
+      const r = explorerRows(ex, `${a}|${spec}`)[latest];
+      return r && r.plo != null ? { a, p: midP(r) } : null;
+    }).filter(Boolean).sort((x, y) => x.p - y.p);
+    const i = shares.findIndex((x) => x.a === area);
+    return i < 0 ? null : { rank: i + 1, of: shares.length };
+  }
+
+  function downloadCsv(filename, columns, rows) {
+    const esc = (v) => (v == null ? "" : /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+    const text = [columns.map((c) => c.label).join(","), ...rows.map((r) => columns.map((c) => esc(c.raw(r))).join(","))].join("\n");
+    const a = el("a", { href: URL.createObjectURL(new Blob([text], { type: "text/csv" })), download: filename });
+    document.body.append(a); a.click(); a.remove();
+  }
+
+  async function pageHome() {
+    const [meta, findings, fsa, tx] = await Promise.all([load("meta.json"), load("findings.json"), load(MEASURE_FILE.FSA), load(MEASURE_FILE.Treatment)]);
+    const ex = { FSA: fsa, Treatment: tx };
+    const ann = annIn(meta.annotations.filter((a) => a.scope === "National"), fsa.months);
+    const f = document.getElementById("findings");
+    if (f) renderFindings(f, findings, ex, ann);
+    const e = document.getElementById("explorer");
+    if (e) renderExplorer(e, meta, ex, ann);
+    const c = document.getElementById("comparison");
+    if (c) renderComparison(c, await load("funnel_extract.json"));
+  }
+
+  function renderFindings(root, findings, ex, ann) {
+    root.replaceChildren(...findings.map((fd, i) => {
+      const head = el("h3", { class: "finding-title" }, `${i + 1}. ${fd.title}`);
+      if (fd.bars) {
+        const bars = fd.bars.map((b) => ({ ...b }));
+        return el("div", { class: "finding" }, head, card({
+          takeaway: fd.text,
+          draw: (w) => barChart(w, bars, { label: "d", lo: "ulo", hi: "uhi", isPct: true, target: 0.95, xmax: 1,
+            tip: (r) => `${r.d}\n${fmtPctRange(r.ulo, r.uhi, 1)} waiting under four months` }),
+          legendItems: [["band", css("--series-1"), "Share waiting under four months"], ["", css("--text-secondary"), "Health target: 95% by 2030"]],
+          table: dataTable([{ label: "District", value: (r) => r.d }, { label: "Waiting under four months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1) }], bars),
+        }));
+      }
+      const x = ex[fd.measure];
+      const rows = explorerRows(x, fd.series).map((r, j) => ({ ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] }));
+      return el("div", { class: "finding" }, head, card({
+        takeaway: fd.text,
+        draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting over 4 months" }),
+        legendItems: [["", css("--series-1"), "Waiting more than four months"], ["", css("--text-muted"), "Smoothed trend with 95% interval"], ...annLegend(ann)],
+        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) }], rows.filter((r) => r.nlo != null).reverse()),
+      }));
+    }));
+  }
+
+  function renderExplorer(root, meta, ex, ann) {
+    const h = hashState();
+    let measure = h.get("measure") === "Treatment" ? "Treatment" : "FSA";
+    let area = h.get("area") || "New Zealand";
+    let spec = h.get("specialty") || "All";
+    let barMode = "count";
+    let compareWith = h.get("compare") || "";
+    const controls = el("div", { class: "controls controls-sticky" });
     const body = el("div");
-    const controls = el("div", { class: "controls" });
-    root.append(controls, body);
+    root.replaceChildren(controls, body);
 
     function drawControls() {
-      const names = Object.keys(sp.indicators[code]);
-      if (!names.includes(specialty)) specialty = names.includes("Orthopaedics") ? "Orthopaedics" : names[0];
+      const x = ex[measure];
+      if (!x.areas.includes(area)) area = "New Zealand";
+      if (spec !== "All" && !x.specialties.includes(spec)) spec = "All";
       controls.replaceChildren(
-        segmented("Measure", [["ESPI2", "First assessment"], ["ESPI5", "Treatment"]], code, (v) => { code = v; setHash("measure", v); drawControls(); draw(); }),
-        selectControl("Specialty", names, specialty, (v) => { specialty = v; setHash("specialty", v); draw(); }),
-        segmented("Show", [["count", "Patients"], ["share", "Share of list"]], measure, (v) => { measure = v; draw(); }));
+        segmented("Waiting for", MEASURES, measure, (v) => { measure = v; setHash("measure", v); drawControls(); draw(); }),
+        selectControl("Area", x.areas, area, (v) => { area = v; setHash("area", v); draw(); }),
+        selectControl("Specialty", ["All specialties", ...x.specialties], spec === "All" ? "All specialties" : spec,
+          (v) => { spec = v === "All specialties" ? "All" : v; setHash("specialty", spec); draw(); }),
+        selectControl("Compare with", ["No comparison", ...x.areas], compareWith || "No comparison",
+          (v) => { compareWith = v === "No comparison" ? "" : v; setHash("compare", compareWith); draw(); }));
     }
 
     function draw() {
-      const block = sp.indicators[code][specialty];
-      const isShare = measure === "share";
-      let rows = block.districts.filter((r) => (isShare ? r.plo != null : r.nhi > 0));
-      rows = rows.slice().sort((a, b) => (isShare ? (b.plo + b.phi) - (a.plo + a.phi) : (b.nlo + b.nhi) - (a.nlo + a.nhi)));
-      const natBlock = { series: block.series, takeaway: block.national_takeaway };
-      const ranked = block.districts.filter((r) => r.plo != null).sort((a, b) => (a.plo + a.phi) - (b.plo + b.phi));
-      const shareRank = new Map(ranked.map((r, i) => [r.d, `${i + 1} of ${ranked.length}`]));
-      body.replaceChildren(
-        rows.length === 0 ? el("p", { class: "takeaway" }, block.takeaway) : card({
-          takeaway: block.takeaway,
-          sub: `<a href="${defLink(code)}">${DISPLAY[code]}</a>, ${monthLabel(parseMonth(sp.latest))}. ${isShare ? "Share of each district's waiting list for this specialty." : "Districts with none waiting are not shown."}`,
-          draw: (w) => barChart(w, rows, {
-            label: "d", lo: isShare ? "plo" : "nlo", hi: isShare ? "phi" : "nhi", isPct: isShare,
-            tip: (r) => `${r.d}\n${fmtRange(r.nlo, r.nhi)} patients\n${fmtPctRange(r.plo, r.phi)} of ${fmtRange(r.dlo, r.dhi)} on the list` +
-              (r.firstlo != null ? `\nIn ${monthShort(parseMonth(sp.first))}: ${fmtRange(r.firstlo, r.firsthi)}` : ""),
-          }),
-          legendItems: [["band", css("--series-1"), isShare ? "Share of list" : "Patients"], ["band", css("--wash"), "Range where counts of 1 to 4 are suppressed"]],
-          table: dataTable([
-            { label: "District", value: (r) => r.d },
-            { label: "Patients", value: (r) => fmtRange(r.nlo, r.nhi) },
-            { label: "On the list", value: (r) => fmtRange(r.dlo, r.dhi) },
-            { label: "Share of list", value: (r) => fmtPctRange(r.plo, r.phi) },
-            { label: "A year earlier", value: (r) => (r.prevlo == null ? "not reported" : fmtRange(r.prevlo, r.prevhi)) },
-            { label: `In ${monthShort(parseMonth(sp.first))}`, value: (r) => (r.firstlo == null ? "not reported" : fmtRange(r.firstlo, r.firsthi)) },
-            { label: "Rank by share (1 = smallest)", value: (r) => (shareRank.get(r.d) ?? "") },
-          ], block.districts),
-        }),
-        el("h2", {}, `${specialty} across New Zealand`),
-        indicatorCard(meta, code, natBlock));
+      const x = ex[measure];
+      const key = `${area}|${spec}`;
+      const rows = explorerRows(x, key);
+      const now = latestRow(rows);
+      const where = `${spec === "All" ? "" : `${spec}, `}${area}`;
+      if (!now) {
+        body.replaceChildren(el("p", { class: "caveat" }, `No ${MEASURES.find((m) => m[0] === measure)[1].toLowerCase()} waitlist is reported for ${where}.`));
+        return;
+      }
+      const i19 = x.months.indexOf("2019-01");
+      const r19 = i19 >= 0 ? rows[i19] : null;
+      const prev = yearEarlier(rows.filter((r) => r.nlo != null));
+      const rank = area !== "New Zealand" ? rankOf(x, area, spec) : null;
+      const tiles = el("div", { class: "tiles tiles-4" },
+        el("div", { class: "tile" },
+          el("p", { class: "label" }, `Waited more than four months, ${monthLabel(now.date)}`),
+          el("a", { class: "value", href: `${OFFSET}methods.html#measures`, title: "What this number means" }, headline(now.nlo, now.nhi)),
+          el("p", { class: "delta" }, prev ? diffText(now, prev, "a year earlier") : ""),
+          now.nlo !== now.nhi ? el("p", { class: "delta" }, `Range ${fmtRange(now.nlo, now.nhi)} (small counts are suppressed)`) : null,
+          (() => {
+            const peak = rows.filter((r) => r.nlo != null).reduce((a, r) => (r.nlo + r.nhi > a.nlo + a.nhi ? r : a));
+            return el("p", { class: "delta" }, `Highest: ${headline(peak.nlo, peak.nhi)} (${monthShort(peak.date)})`);
+          })()),
+        el("div", { class: "tile" },
+          el("p", { class: "label" }, "Waiting less than four months"),
+          el("a", { class: "value", href: `${OFFSET}methods.html#health-targets`, title: "The health target measure" }, now.ulo == null ? "unknown" : fmtPctRange(now.ulo, now.uhi)),
+          el("p", { class: "delta" }, `of ${headline(now.tlo, now.thi)} waiting. Health target: 95% by 2030.`)),
+        el("div", { class: "tile" },
+          el("p", { class: "label" }, "Compared with January 2019"),
+          el("p", { class: "value value-sm" }, r19 && r19.nlo != null ? diffText(now, r19, "") .replace(/ than $/, "") : "not reported in 2019"),
+          el("p", { class: "delta" }, r19 && r19.nlo != null ? `${fmtRange(r19.nlo, r19.nhi)} waited more than four months in January 2019` : "")),
+        rank ? el("div", { class: "tile" },
+          el("p", { class: "label" }, `Rank among districts${spec === "All" ? "" : ` for ${spec}`}`),
+          el("p", { class: "value value-sm" }, `${ordinal(rank.rank)} of ${rank.of}`),
+          el("p", { class: "delta" }, el("a", { href: "#comparison" }, "1 = smallest share waiting over four months"))) : null);
+
+      const isNZAll = key === "New Zealand|All";
+      const cmpArea = compareWith && compareWith !== area ? compareWith : "";
+      const cmpRows = cmpArea ? explorerRows(x, `${cmpArea}|${spec}`) : [];
+      const cmpPct = cmpRows.map((r) => ({ ...r, nlo: null, nhi: null, plo: r.ulo, phi: r.uhi }));
+      const cmpLabel = `${cmpArea}${spec === "All" ? "" : `, ${spec}`}`;
+      const trendRows = rows.map((r, j) => (isNZAll ? { ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] } : r));
+      const countCard = card({
+        takeaway: `People in ${where} who had waited more than four months for ${MEASURE_NOUN[measure]}, by month.`,
+        draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People" }),
+        legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...annLegend(ann)],
+        table: null,
+      });
+      const pctRows = rows.map((r) => ({ ...r, nlo: null, nhi: null, plo: r.ulo, phi: r.uhi }));
+      const hasCmp = cmpPct.some((r) => r.plo != null);
+      const pctCard = card({
+        takeaway: `Share of everyone waiting in ${where} who had waited less than four months${hasCmp ? `, compared with ${cmpLabel}` : ""}.`,
+        sub: cmpArea && !hasCmp ? `${cmpLabel} has no data for this list.` : null,
+        draw: (w) => lineChart(w, { series: pctRows, isPct: true, annotations: ann, yLabel: "Waiting under 4 months", targetLine: 0.95,
+          compare: hasCmp ? [{ series: cmpPct, stroke: css("--text-muted"), label: cmpLabel }] : [] }),
+        legendItems: [["", css("--series-1"), where], ...(hasCmp ? [["", css("--text-muted"), cmpLabel]] : []), ["", css("--text-secondary"), "Health target: 95% by 2030"]],
+      });
+
+      const tableCols = [
+        { label: "Month", value: (r) => monthShort(r.date), raw: (r) => r.m },
+        { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi), raw: (r) => (r.nlo === r.nhi ? r.nlo : `${r.nlo}-${r.nhi}`) },
+        { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi), raw: (r) => (r.tlo === r.thi ? r.tlo : `${r.tlo}-${r.thi}`) },
+        { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1), raw: (r) => (r.ulo == null ? "" : `${(100 * r.ulo).toFixed(1)}-${(100 * r.uhi).toFixed(1)}`) },
+      ];
+      const shown = rows.filter((r) => r.nlo != null).reverse();
+      const tableBlock = el("div", {},
+        dataTable(tableCols, shown, "Show the data for this selection"),
+        el("p", {}, el("button", { type: "button", class: "btn-link", onclick: () => downloadCsv(`waitlist_${measure}_${area}_${spec}.csv`.replace(/[^\w.-]+/g, "_"), tableCols, shown) }, "Download this selection (CSV)")));
+
+      const vintage = meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3");
+      const note = el("p", { class: "chart-sub" }, `Source: Health NZ waitlist extract ${vintage}, ${monthLabel(parseMonth(x.months[0]))} to ${monthLabel(parseMonth(x.months[x.months.length - 1]))}. Historical figures may be revised by Health NZ; `,
+        el("a", { href: `${OFFSET}methods.html#revisions` }, "see revisions"), ".");
+      body.replaceChildren(tiles, note, countCard, pctCard, tableBlock, breakdown());
+
+      function breakdown() {
+        const latest = x.months.length - 1;
+        let title, items;
+        if (spec === "All" && area !== "New Zealand") {
+          title = `Specialties in ${area}`;
+          items = x.specialties.map((s) => ({ label: s, r: explorerRows(x, `${area}|${s}`)[latest] }));
+        } else {
+          title = spec === "All" ? "Districts" : `Districts: ${spec}`;
+          items = x.areas.filter((a) => a !== "New Zealand").map((a) => ({ label: a, r: explorerRows(x, `${a}|${spec}`)[latest] }));
+        }
+        const wrap = el("div");
+        const drawBars = () => {
+          const isShare = barMode === "share";
+          let bars = items.filter((it) => it.r && it.r.nlo != null && (isShare ? it.r.ulo != null : it.r.nhi > 0))
+            .map((it) => ({ label: it.label, ...it.r }));
+          bars.sort((a, b) => (isShare ? (b.ulo + b.uhi) - (a.ulo + a.uhi) : (b.nlo + b.nhi) - (a.nlo + a.nhi)));
+          wrap.replaceChildren(bars.length === 0 ? el("p", {}, "Nothing to show for this selection.") : card({
+            takeaway: `${title}, ${monthLabel(parseMonth(x.months[latest]))}: ${isShare ? "share waiting less than four months" : "people who had waited more than four months"}.`,
+            draw: (w) => barChart(w, bars, {
+              label: "label", lo: isShare ? "ulo" : "nlo", hi: isShare ? "uhi" : "nhi", isPct: isShare,
+              target: isShare ? 0.95 : null, xmax: isShare ? 1 : null, highlight: area,
+              tip: (r) => `${r.label}\n${fmtRange(r.nlo, r.nhi)} waited over 4 months\n${fmtPctRange(r.ulo, r.uhi)} waiting under 4 months`,
+            }),
+            legendItems: [["band", css("--series-1"), isShare ? "Share under four months" : "People"], ["band", css("--wash"), "Range from suppressed small counts"], ...(isShare ? [["", css("--text-secondary"), "Health target: 95%"]] : [])],
+            table: dataTable([
+              { label: spec === "All" && area !== "New Zealand" ? "Specialty" : "District", value: (r) => r.label },
+              { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) },
+              { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi) },
+              { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi) },
+            ], bars),
+          }));
+        };
+        drawBars();
+        return el("div", {}, el("h3", {}, title),
+          el("div", { class: "controls" }, segmented("Show", [["count", "People"], ["share", "Share under 4 months"]], barMode, (v) => { barMode = v; drawBars(); })),
+          wrap);
+      }
     }
     drawControls();
     draw();
   }
 
-  async function pageFair(root) {
-    const [meta, fu] = await Promise.all([load("meta.json"), load("funnel.json")]);
-    let code = "ESPI2";
+  function renderComparison(root, fu) {
+    let code = "FSA";
     const body = el("div");
-    root.append(
-      el("p", {}, "Each dot is a district. Bigger waiting lists sit further right. If every district had the same underlying share, dots would scatter inside the funnel by chance; dots outside the outer lines differ by more than chance and the usual variation between districts."),
-      el("div", { class: "controls" }, segmented("Measure", [["ESPI2", "First assessment"], ["ESPI5", "Treatment"]], code, (v) => { code = v; draw(); })),
+    root.replaceChildren(
+      el("p", {}, "Each dot is a district. Bigger waiting lists sit further right. If every district had the same underlying share waiting over four months, dots would scatter inside the funnel by chance. Dots outside the outer lines differ by more than chance and the usual variation between districts. This is not adjusted for need, such as age, deprivation or use of private care."),
+      el("div", { class: "controls" }, segmented("Waiting for", MEASURES, code, (v) => { code = v; draw(); })),
       body);
-
     function draw() {
       const f = fu[code];
       const pts = f.points;
-      const out = pts.filter((p) => p.status !== "within limits");
       body.replaceChildren(card({
         takeaway: f.takeaway,
-        sub: `<a href="${defLink(code)}">${DISPLAY[code]}</a>, ${monthLabel(parseMonth(fu.latest))}. National share ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#district-comparison">methods</a>.`,
+        sub: `${monthLabel(parseMonth(f.latest))}. National share waiting over four months ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#district-comparison">methods</a>.`,
         draw: (w) => {
           const s1 = css("--series-1"), axis = css("--axis"), muted = css("--text-muted");
           return Plot.plot({
             width: w, height: chartHeight(w) + 40, marginLeft: 48, marginRight: 16, marginBottom: 40, style: plotStyle(),
-            x: { type: "log", label: "Patients on the waiting list (log scale)", tickFormat: "~s", ticks: w < 480 ? 3 : 6 },
+            x: { type: "log", label: "People on the waiting list (log scale)", tickFormat: "~s", ticks: w < 480 ? 3 : 6 },
             y: { label: "Share waiting over 4 months", grid: true, tickFormat: (d) => `${Math.round(d * 100)}%`, domain: [0, Math.min(1, Math.max(...pts.map((p) => p.y), ...f.limits.map((l) => l.hi998)) * 1.05)] },
             marks: [
               Plot.line(f.limits, { x: "size", y: "lo998", stroke: muted, strokeWidth: 1 }),
@@ -452,7 +566,7 @@
               Plot.line(f.limits, { x: "size", y: "hi95", stroke: axis, strokeWidth: 1 }),
               Plot.ruleY([f.target], { stroke: css("--text-secondary"), strokeWidth: 1 }),
               Plot.dot(pts, { x: "size", y: "y", r: 5, fill: (p) => (p.status.includes("99.8") ? s1 : muted), stroke: css("--surface-1"), strokeWidth: 2 }),
-              Plot.text(pts.filter((p) => p.status.includes("99.8") || p.status.includes("95")), { x: "size", y: "y", text: "d", dy: -10, fill: css("--text-primary"), fontSize: 11 }),
+              Plot.text(pts.filter((p) => p.status !== "within limits"), { x: "size", y: "y", text: "d", dy: -10, fill: css("--text-primary"), fontSize: 11 }),
               Plot.tip(pts, Plot.pointer({ x: "size", y: "y", title: (p) => `${p.d}\n${fmtPct(p.y, 1)} of ${fmtInt(p.size)} waiting over 4 months\n${p.status}` })),
             ],
           });
@@ -461,14 +575,26 @@
         table: dataTable([
           { label: "District", value: (r) => r.d },
           { label: "On the list", value: (r) => fmtInt(r.size) },
-          { label: "Waiting over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) },
+          { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) },
           { label: "Share", value: (r) => fmtPct(r.y, 1) },
           { label: "Compared with limits", value: (r) => r.status },
         ], pts.slice().sort((a, b) => b.y - a.y)),
-      }),
-      el("h2", {}, "Rates per 100,000 people"),
-      f.population ? el("p", {}, f.population.takeaway) : el("p", { class: "caveat" },
-        "Population-based rates will be added once the district population source has been confirmed. Until then, districts are compared by the share of their own waiting list, which needs no outside data."));
+      }));
+    }
+    draw();
+  }
+
+  // ESPI 1, 3 and 8 from the OIA release (2019 to 2025).
+  async function pageContext(root) {
+    const [meta, nat, dd] = await Promise.all([load("meta.json"), load("national.json"), load("districts.json")]);
+    const ann = meta.annotations.filter((a) => a.scope === "National");
+    const names = ["New Zealand", ...Object.keys(dd.districts)];
+    let area = names.includes(hashState().get("area")) ? hashState().get("area") : "New Zealand";
+    const body = el("div");
+    root.append(el("div", { class: "controls" }, selectControl("Area", names, area, (v) => { area = v; setHash("area", v); draw(); })), body);
+    function draw() {
+      const src = area === "New Zealand" ? nat : dd.districts[area].indicators;
+      body.replaceChildren(...["ESPI1", "ESPI3", "ESPI8"].filter((c) => src[c]).map((c) => indicatorCard(meta, c, src[c], { annotations: ann })));
     }
     draw();
   }
@@ -541,6 +667,18 @@
           el("td", {}, /^Not applicable/.test(c.detail || "") ? "Not applicable" : c.passed ? "Passed" : `${c.n_failing} rows flagged`),
           el("td", {}, c.detail || ""))))));
     }
+    const revs = document.getElementById("revisions-table");
+    if (revs) {
+      const rows = (meta.extract && meta.extract.revisions) || [];
+      const name = (m) => (m === "FSA" ? "First specialist assessment" : "Planned treatment");
+      revs.replaceChildren(rows.length === 0 ? el("p", {}, "Only one extract is held, so there is nothing to compare yet.") : el("table", {},
+        el("thead", {}, el("tr", {}, ["From", "To", "List", "Months compared", "Average change", "Largest change"].map((h) => el("th", { scope: "col" }, h)))),
+        el("tbody", {}, rows.map((r) => el("tr", {},
+          el("td", {}, r.from.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3")), el("td", {}, r.to.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3")),
+          el("td", {}, name(r.measure)), el("td", {}, fmtInt(r.months)),
+          el("td", {}, `${fmtInt(r.mean_abs)} people`),
+          el("td", {}, r.max_abs === 0 ? "none" : `${fmtInt(r.max_abs)} people (${monthShort(parseMonth(r.max_month))})`))))));
+    }
     const sources = document.getElementById("sources-table");
     if (sources) {
       sources.replaceChildren(el("table", {},
@@ -555,12 +693,15 @@
   async function boot() {
     load("meta.json").then((meta) => {
       const v = document.getElementById("data-version");
-      if (v) v.textContent = `Data to ${monthLabel(parseMonth(meta.latest_month))}; version ${meta.data_version}, built ${meta.built}.`;
+      if (v) v.textContent = `Waiting lists to ${monthLabel(parseMonth(meta.extract.latest_month))} (extract ${meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3")}); version ${meta.data_version}, built ${meta.built}.`;
     }).catch(() => {});
-    const pages = { "page-national": pageNational, "page-district": pageDistrict, "page-specialty": pageSpecialty, "page-compare": pageFair, "page-target": pageTarget };
+    const pages = { "page-context": pageContext, "page-target": pageTarget };
     for (const [id, fn] of Object.entries(pages)) {
       const root = document.getElementById(id);
       if (root) fn(root).catch((e) => errorBox(root, e));
+    }
+    if (document.getElementById("explorer")) {
+      pageHome().catch((e) => errorBox(document.getElementById("explorer"), e));
     }
     if (document.getElementById("checks-table")) pageMethods().catch(console.error);
   }

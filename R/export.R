@@ -237,3 +237,9 @@ digest_file <- function(path) {
   # tools::md5sum avoids a dependency on the digest package.
   unname(tools::md5sum(path))
 }
+
+digest_text <- function(x) {
+  f <- tempfile(); on.exit(unlink(f))
+  writeLines(x, f)
+  digest_file(f)
+}

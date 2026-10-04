@@ -13,9 +13,12 @@ fmt_count_range <- function(lo, hi) {
   if (is.na(lo) || is.na(hi)) return("unknown")
   if (lo == hi) return(fmt_int(lo))
   mid <- (lo + hi) / 2
-  if ((hi - lo) / max(mid, 1) <= 0.02 && mid >= 1000) {
+  if ((hi - lo) / max(mid, 1) <= 0.05 && mid >= 1000) {
     step <- if (mid >= 10000) 100 else 10
-    return(paste("about", fmt_int(round(mid / step) * step)))
+    rounded <- round(mid / step) * step
+    # Never round to a figure outside the possible range.
+    if (rounded < lo || rounded > hi) rounded <- round(mid)
+    return(paste("about", fmt_int(rounded)))
   }
   paste(fmt_int(lo), "to", fmt_int(hi))
 }

@@ -8,13 +8,29 @@ subtitle: "What these numbers mean, what they do not mean, and how they were pro
 
 ## The most important caveat {#caveats}
 
-ESPI counts only patients **accepted** onto a waiting list. If a district declines more referrals, its numbers can look better without anyone being seen sooner. That is why referral processing (ESPI 1) is shown alongside the headline measures. ESPI 1 is only a partial check, because it measures whether referrals were processed on time, not how many were accepted.
+Waiting lists count only patients **accepted** onto them. If a district declines more referrals, its numbers can look better without anyone being seen sooner. Referral processing (ESPI 1, on the [More indicators](context.qmd) page) is only a partial check: it measures whether referrals were processed on time, not how many were accepted.
 
 The tracker cannot tell an individual how long they will wait. The data has no individual waiting times. If you are worried about your own wait, talk to your GP or the specialist service.
 
-All figures are **provisional**. Health NZ states that the history released under the Official Information Act has "not yet undergone the full quality assurance process" and may be updated.
+All figures are **provisional**. Health NZ notes that its extracts "may be different from previously published official figures due to ongoing data quality improvements". The OIA history has "not yet undergone the full quality assurance process". This site keeps every release and shows how much figures change between them (see [Revisions](#revisions)).
 
-## The indicators
+## The waiting list measures {#measures}
+
+The home page uses Health NZ's quarterly **health target waitlist extracts**. Each gives, for every month, district and specialty, the number of people waiting and the number who had waited **less than 120 days** (four months), for two lists:
+
+- **First specialist assessment (FSA):** people referred and accepted for a first appointment with a specialist, timed from referral.
+- **Planned treatment (elective waitlist):** people on the list for planned (elective) treatment. The treatment list also has an ethnicity breakdown, which this version does not show.
+
+"Waited more than four months" is total waiting minus waiting under 120 days. "Waiting less than four months" is the measure behind the health targets of 95% by 2030.
+
+- For first specialist assessments, the counts match ESPI 2 in the OIA release almost exactly (in December 2025, 406 of 418 district and specialty cells agree to within 3 patients).
+- For planned treatment, the counts are within about 1% to 3% of ESPI 5. The extract uses different specialty groupings (25 against 19).
+
+The extracts cover July 2015 to June 2026. Some files also contain earlier months, which are not used because Health NZ describes the range as starting in July 2015. Where several extracts cover the same month, the latest is used.
+
+For the treatment list, small counts are suppressed separately for each ethnic group, so totals have wider ranges than for first specialist assessments. For example, the national treatment figure for June 2026 has a range of a few hundred people (shown under the headline figure in the explorer).
+
+## The ESPI indicators {#indicators}
 
 ESPI stands for elective services patient flow indicators, which Health NZ uses to monitor planned (non-urgent) specialist care. The definitions below follow Health NZ's OIA response HNZ00201361 (25 March 2026). Where this site's description of a denominator is inferred from the data rather than stated by Health NZ, it is marked as such.
 
@@ -42,16 +58,16 @@ The percentage of patients treated whose priority was assessed with a nationally
 
 ## Suppressed small counts {#suppression}
 
-To protect privacy, Health NZ shows counts of 1 to 4 as "<5". This site treats every "<5" as a value **between 1 and 4**. It never shows these values as zero and never tries to reconstruct them. Totals are reported as ranges (lowest possible to highest possible). When a range is narrow compared with the total (within 2%), headline figures are rounded and prefixed "about". The exact range is always in the data table under each chart.
+To protect privacy, Health NZ shows counts of 1 to 4 as "<5". This site treats every "<5" as a value **between 1 and 4**. It never shows these values as zero and never tries to reconstruct them. Totals are reported as ranges (lowest possible to highest possible). When a range is narrow compared with the total (within 5%), headline figures are rounded and prefixed "about". The exact range is always in the data table under each chart.
 
-Share-of-list figures use only rows where the numerator is not larger than the denominator. In the OIA history, 13 rows (all ESPI 2) have a numerator larger than their denominator. These rows are kept in the counts but left out of the shares, and they are listed in the data checks below.
+Share-of-list figures for ESPI use only rows where the numerator is not larger than the denominator. In the OIA history, 13 rows (all ESPI 2) have a numerator larger than their denominator. The same cells appear in the extracts as negative "waiting under 120 days" counts. They are kept in the counts and listed in the data checks below.
 
 ## Known data issues {#known-issues}
 
 - **The data system changed in July 2026.** Health NZ replaced the National Booking Reporting System (NBRS) with the National Booking Reporting Dataset (NBRD) from 1 July 2026. Under NBRD, ESPI 2 is calculated from patient-level records (waiting more than 120 days since referral), with a defined list of excluded specialties. ESPI 5 has extra specialty exclusions, and may start its clock when a patient is added to the waitlist. Figures before and after July 2026 may therefore not be comparable. On this site, trends and projections are never fitted across the change, and the change is marked on charts once data reaches it. NBRD's standard statistics do not include ESPI 1, 3 or 8. Details: [the transition notes in the repository](https://github.com/hawkek/dashboard/blob/main/docs/nbrd_transition.md).
 
 - **ESPI 3 falls sharply between June and September 2022**, from about 228 to about 30 patients nationally. A change that large and that fast may reflect a change in method or recording rather than in practice. Compare ESPI 3 across 2022 with care.
-- **Hawke's Bay, January 2025, looks double-counted.** Almost every Hawke's Bay specialty roughly doubled for that month and returned to normal in February (for example, ESPI 2 Gynaecology went from 616 to 1,247 and back to 619). This adds about 3,400 patients to the national ESPI 2 figure for January 2025. The values are shown as released, and listed in the flagged cells download. Smaller one-month dips appear in Canterbury General Surgery (February 2019) and Southern Orthopaedics (February 2020).
+- **Hawke's Bay, January 2025, looks double-counted** in both the OIA release and the health target extracts. Almost every Hawke's Bay specialty roughly doubled for that month and returned to normal in February (for example, first specialist assessment Gynaecology went from 616 to 1,247 and back to 619). This adds about 3,400 people to the national figure for January 2025. The values are shown as released, and listed in the flagged cells download. Smaller one-month dips appear in Canterbury General Surgery (February 2019) and Southern Orthopaedics (February 2020).
 - **Some months have no ESPI 1 data for a district.** For example, no Auckland services reported in December 2025. National ESPI 1 percentages for those months cover fewer services, and the takeaway sentence says when that happens.
 - **Some specialty series start or stop part-way through.** A missing row is treated as "not reported", never as zero.
 
@@ -65,13 +81,27 @@ The national charts show a smoothed trend from a generalised additive model (neg
 
 ## Cross-check against the health targets {#health-targets}
 
-Health NZ's "shorter wait times for first specialist assessment" health target counts the share of patients waiting at the end of a period who have waited less than four months. That should equal 100% minus the ESPI 2 share of the list. For June 2025, Health NZ published 62.0%, and the OIA data gives 62.0% to 62.1%. The pipeline repeats this comparison automatically whenever both sources cover the same month. The treatment health target works the same way for elective treatment. Health NZ's detail extract of that waitlist gives counts within about 1% to 3% of ESPI 5, so the two are closely aligned but not identical.
+Health NZ's health targets count the share of people waiting at the end of a period who have waited less than four months: 95% by 2030, for both first specialist assessments and planned treatment.
+
+- **First specialist assessment, June 2026:** the national figure (66.1%) and all 20 district figures published on the health target dashboard fall within the ranges given by the Q4 2025/26 extract.
+- **Planned treatment, June 2026:** the national figure (72.6%) and 18 of 20 district figures fall within the extract's ranges. Hutt Valley (69.3% published; 69.5% to 69.7% from the extract) and Waitemata (72.3%; 71.8% to 72.2%) differ by up to 0.2 percentage points. A likely reason, not confirmed, is that the extract's ethnicity breakdown leaves out people whose ethnicity is not recorded.
+- **First specialist assessment, June 2025:** the dashboard's figure (62.0%) matches the OIA release (62.0% to 62.1%). The latest extract has since revised that month to 61.4%.
+
+These comparisons run automatically. Published figures are compared with the extract released at the same time, because earlier months are revised later.
+
+## Revisions {#revisions}
+
+Each quarterly extract restates the whole history. The table compares the national number waiting more than four months in every month that two consecutive extracts both cover.
+
+::: {#revisions-table .table-wrap .wrap}
+Loading...
+:::
 
 ## District comparison {#district-comparison}
 
-Districts are compared using a **funnel plot**. For each district, the share of its waiting list waiting over four months is plotted against the size of its list. The lines show where 95% and 99.8% of districts would fall if they all shared the national share.
+The home page compares districts in the latest month of the extract, using a **funnel plot**. For each district, the share of its waiting list waiting over four months is plotted against the size of its list. The lines show where 95% and 99.8% of districts would fall if they all shared the national share.
 
-With waiting lists of thousands of patients, pure chance (binomial) limits are extremely narrow, and nearly every district would fall outside them. The spread between districts is much larger than chance alone would produce (the overdispersion factor is shown on the page). Following Spiegelhalter (2005, *Statistics in Medicine* 24:1185-1202), the limits add an estimated between-district variance, based on z-scores winsorised at the 10th and 90th centiles. A district outside the 99.8% limits differs from the national pattern by more than chance and normal variation between districts would explain. That is a prompt to look closer, not a verdict. The comparison is not adjusted for differences in need, such as age, deprivation, use of private care or referral thresholds. That is why the page is called a district comparison rather than a fair comparison.
+With waiting lists of thousands of patients, pure chance (binomial) limits are extremely narrow, and nearly every district would fall outside them. The spread between districts is much larger than chance alone would produce (the overdispersion factor is shown on the page). Following Spiegelhalter (2005, *Statistics in Medicine* 24:1185-1202), the limits add an estimated between-district variance, based on z-scores winsorised at the 10th and 90th centiles. A district outside the 99.8% limits differs from the national pattern by more than chance and normal variation between districts would explain. That is a prompt to look closer, not a verdict. The comparison is not adjusted for differences in need, such as age, deprivation, use of private care or referral thresholds. That is why it is called a district comparison rather than a fair comparison.
 
 The build plan proposed rates per 100,000 population. Those will be added once the population source Health NZ itself uses has been confirmed (see the [project repository](https://github.com/hawkek/dashboard)).
 
@@ -101,12 +131,15 @@ Loading...
 Loading...
 :::
 
-- **OIA release HNZ00201361** (25 March 2026): ESPI 1, 2, 3, 5 and 8 by district and specialty, January 2019 to December 2025, released to an FYI.org.nz requester.
-- **ESPI web tool** (tewhatuora.shinyapps.io/ESPI_app): the latest 12 months, downloaded each month. Each download is kept unchanged in the repository. Where a month appears in more than one download, the most recent figures are used, and every difference is logged.
+- **Health target waitlist extracts** (Health NZ, quarterly, from the health targets results page): first specialist assessment and planned treatment waitlists by month, district and specialty. This site holds the extracts for the four quarters of 2025/26. The latest covers July 2015 to June 2026. These are the source of the home page.
+- **OIA release HNZ00201361** (25 March 2026): ESPI 1, 2, 3, 5 and 8 by district and specialty, January 2019 to December 2025, released to an FYI.org.nz requester. It is the source of the More indicators page, and a cross-check for the extracts.
+- **ESPI web tool** (tewhatuora.shinyapps.io/ESPI_app): the latest 12 months. Optional monthly supplement, not yet in use.
 
 ## Downloads {#downloads}
 
-- [espi_long.csv](downloads/espi_long.csv): every row, all indicators. The `_lo` and `_hi` columns give the range for suppressed counts.
+- [waitlist_monthly.csv](downloads/waitlist_monthly.csv): the waiting list data behind the home page (latest extract), by month, district and specialty. The `_lo` and `_hi` columns give the range for suppressed counts.
+- [extract_revisions.csv](downloads/extract_revisions.csv): every district and specialty cell that changed between consecutive extracts.
+- [espi_long.csv](downloads/espi_long.csv): the OIA release, every row, all indicators.
 - [national_monthly.csv](downloads/national_monthly.csv) and [district_monthly.csv](downloads/district_monthly.csv): totals with ranges.
 - [checks.csv](downloads/checks.csv): results of the latest data checks.
 - [flagged_cells.csv](downloads/flagged_cells.csv): one-month spikes and dips found by the checks. They are published unchanged.
@@ -115,10 +148,11 @@ Loading...
 
 ## Change log {#changelog}
 
-- **First build**: OIA history January 2019 to December 2025. Live web tool data is not yet included.
+- **October 2026**: home page rebuilt around Health NZ's health target extracts (July 2015 to June 2026): three findings, an explorer and a district comparison. ESPI 1, 3 and 8 moved to More indicators. Time to target withdrawn for this version.
+- **First build**: OIA history January 2019 to December 2025.
 
 ## Licence and attribution {#licence}
 
-The data is from Health New Zealand | Te Whatu Ora. Health NZ licenses its website content under Creative Commons Attribution 4.0. Whether the same licence covers the ESPI web tool and the OIA release is still being confirmed. This is an independent project. It is not endorsed by Health NZ. The code is MIT licensed. Charts use [Observable Plot](https://observablehq.com/plot/) and [D3](https://d3js.org/) (ISC licence).
+The data is from Health New Zealand | Te Whatu Ora. Health NZ licenses its website content under Creative Commons Attribution 4.0. Whether the same licence covers the health target extracts, the ESPI web tool and the OIA release is still being confirmed. This is an independent project. It is not endorsed by Health NZ. The code is MIT licensed. Charts use [Observable Plot](https://observablehq.com/plot/) and [D3](https://d3js.org/) (ISC licence).
 
 Found an error? Please open an issue on the [project repository](https://github.com/hawkek/dashboard/issues). Corrections are noted in the change log.

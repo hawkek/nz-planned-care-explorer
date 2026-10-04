@@ -131,6 +131,20 @@ details.data-table summary { cursor: pointer; color: var(--link); min-height: 32
 }
 .caveat-top { font-size: 0.9375rem; margin: 4px 0 20px; }
 .caveat-top strong { color: var(--text-primary); }
+.finding { margin-bottom: 8px; }
+.finding-title { font-size: 1.125rem; font-weight: 650; margin: 24px 0 0; }
+.tiles-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.tile .value-sm { font-size: 1.5rem; }
+.controls-sticky { padding: 8px 0; border-bottom: 1px solid var(--border); }
+@media (max-width: 575px) {
+  .controls label, .controls select { width: 100%; }
+  .seg { width: 100%; }
+  .seg button { flex: 1; }
+}
+.btn-link {
+  background: none; border: 0; padding: 8px 0; min-height: 44px; color: var(--link);
+  text-decoration: underline; cursor: pointer; font-size: 0.9375rem;
+}
 .status-pill { font-size: 0.8125rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--axis); white-space: nowrap; }
 
 /* Plot tooltips follow the theme */

@@ -1,11 +1,26 @@
 ---
-title: "Are waits getting better or worse?"
-subtitle: "New Zealand hospital waitlists since January 2019, from Health NZ's elective services patient flow indicators (ESPI)."
+title: "New Zealand hospital waiting lists"
+subtitle: "How many people have waited more than four months for a first specialist assessment or planned treatment, by district and specialty, since 2015."
 ---
 
 {{< include _caveat.qmd >}}
 
+## Three things to know {#things-to-know}
 
-::: {#page-national}
+::: {#findings}
+Loading...
 :::
 
+## Explore {#explore}
+
+Choose what people are waiting for, an area and a specialty. The link in your browser updates, so you can share exactly what you are looking at.
+
+::: {#explorer}
+Loading...
+:::
+
+## How districts compare {#comparison}
+
+::: {#comparison}
+Loading...
+:::

@@ -1,0 +1,11 @@
+---
+title: "More indicators"
+subtitle: "Referral processing, the treatment threshold and prioritisation tools, January 2019 to December 2025."
+---
+
+{{< include _caveat.qmd >}}
+
+These three elective services patient flow indicators (ESPI) come from Health NZ's Official Information Act release HNZ00201361. They help interpret the waiting list figures: for example, if fewer referrals are accepted, a list can shrink without anyone being seen sooner. They are not in Health NZ's newer reporting, so they stop at December 2025. See [the methods page](methods.qmd#indicators).
+
+::: {#page-context}
+:::

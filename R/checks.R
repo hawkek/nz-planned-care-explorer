@@ -166,14 +166,21 @@ find_spikes <- function(long, min_abs = 300, min_rel = 0.4) {
   long |>
     dplyr::filter(indicator %in% c("ESPI2", "ESPI5")) |>
     dplyr::mutate(mid = (num_lo + num_hi) / 2) |>
-    dplyr::arrange(indicator, district, specialty, month) |>
-    dplyr::group_by(indicator, district, specialty) |>
+    spikes_in(c("indicator", "district", "specialty"), min_abs, min_rel)
+}
+
+# Shared rule: a month more than `min_abs` and `min_rel` away from the median
+# of the five months centred on it, within each series defined by `keys`.
+spikes_in <- function(d, keys, min_abs = 300, min_rel = 0.4) {
+  d |>
+    dplyr::arrange(dplyr::across(dplyr::all_of(c(keys, "month")))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(keys))) |>
     dplyr::mutate(local_median = centred_median(mid, 5)) |>
     dplyr::ungroup() |>
     dplyr::filter(!is.na(local_median),
                   abs(mid - local_median) > min_abs,
                   abs(mid - local_median) > min_rel * local_median) |>
-    dplyr::select(indicator, month, district, specialty, value = mid, local_median)
+    dplyr::select(dplyr::all_of(keys), month, value = mid, local_median)
 }
 
 centred_median <- function(x, width) {

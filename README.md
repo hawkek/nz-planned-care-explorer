@@ -18,19 +18,20 @@ will wait.
 
 ## What it shows
 
-| Page | Question |
+| Page | What it does |
 |---|---|
-| National | Are waits getting better or worse? (ESPI 2 and 5, with ESPI 1, 3 and 8 for context) |
-| My district | How is my district doing, and which specialties have the most people waiting? |
-| Specialties | Where in the country is the wait for this specialty longest? |
-| Fair comparisons | Which districts differ from the national pattern by more than chance? (funnel plot) |
-| Time to target | If the recent trend continued, when would no one wait over four months? (illustrative) |
-| Methods and data | Definitions, caveats, data checks, downloads, change log |
+| Waiting lists (home) | Three automatically written findings; an explorer of first specialist assessment and planned treatment waitlists by district and specialty since July 2015, with comparison against New Zealand or another district; and a district comparison |
+| More indicators | ESPI 1, 3 and 8 (referral processing, treatment threshold, prioritisation tools), 2019 to 2025, from the OIA release |
+| Methods and data | Definitions, caveats, revisions between extracts, data checks, downloads, change log |
 
 ## How it works
 
 ```
-data/raw/            OIA appendices and dated web tool downloads, never edited
+data/raw/            health target extracts (one folder per quarter), OIA appendices
+                     and web tool downloads, never edited
+R/read_extract.R     read the quarterly extracts; vintages and revisions
+R/explorer.R         explorer series, findings, district comparison
+R/checks_extract.R   checks for the extracts, including against published results
 R/read_oia.R         read ESPI tables; "<5" becomes the range 1 to 4
 R/fetch.R            download from the web tool (headless Chrome; untested, see file)
 R/clean.R            combine sources (latest retrieval wins), log revisions
@@ -66,15 +67,18 @@ To add a month by hand, save the web tool export in
 
 1. In the GitHub repository settings, set Pages → Source to "GitHub Actions".
 2. Push to `main`. The workflow tests, rebuilds and deploys the site.
-3. On the 15th of each month the workflow also fetches new data and commits it.
-   If the fetch or a data check fails, the run fails, GitHub emails the owner,
-   and the last good site stays live.
+3. Each quarter, add Health NZ's new waitlist detail extract to
+   `data/raw/health_targets_extract/<YYYY-YY-Qn>/` and push. If a data check
+   fails, the run fails, GitHub emails the owner, and the last good site stays
+   live. Add the quarter's published national and district health target
+   results to `config/reference/` so the check against them runs.
 
 ## Status
 
-See `docs/plan_review.md` for what is done and what is open. In short: the OIA
-history is fully loaded, checked and published. The live web tool fetch, the
-population denominators and the licence confirmation are still to do.
+See `docs/plan_review.md` for what is done and what is open. In short: four
+quarterly extracts and the OIA history are loaded, checked and published, and
+the latest extract reproduces Health NZ's published June 2026 health target
+results. The licence confirmation and user testing are still to do.
 
 ## Licence
 
