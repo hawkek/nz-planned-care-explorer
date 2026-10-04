@@ -404,7 +404,7 @@
     if (f) renderFindings(f, findings, ex, ann);
     const e = document.getElementById("explorer");
     if (e) renderExplorer(e, meta, ex, ann);
-    const c = document.getElementById("comparison");
+    const c = document.getElementById("comparison-body");
     if (c) renderComparison(c, await load("funnel_extract.json"));
   }
 
@@ -505,6 +505,7 @@
       const countCard = card({
         takeaway: "",
         sub: "Monthly trend",
+        alt: `Monthly trend: people in ${where} who had waited more than four months for ${MEASURE_NOUN[measure]}, ${monthLabel(rows.find((r) => r.nlo != null).date)} to ${monthLabel(now.date)}. Values are in the data table below.`,
         primary: true,
         draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People", label: area, big: true }),
         legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...annLegend(ann)],
@@ -738,9 +739,10 @@
       const root = document.getElementById(id);
       if (root) fn(root).catch((e) => errorBox(root, e));
     }
-    if (document.getElementById("explorer")) {
-      pageHome().catch((e) => errorBox(document.getElementById("explorer"), e));
-    }
+    // Findings, explorer and comparison can sit on different pages; draw
+    // whichever are present.
+    const homeRoot = ["findings", "explorer", "comparison-body"].map((id) => document.getElementById(id)).find(Boolean);
+    if (homeRoot) pageHome().catch((e) => errorBox(homeRoot, e));
     if (document.getElementById("checks-table")) pageMethods().catch(console.error);
   }
 

@@ -4,8 +4,10 @@ One folder per retrieval, named by the date of download (`YYYY-MM-DD`), holding
 the files exactly as downloaded. Never edit these files; the pipeline reads
 every folder and uses the most recent figures for each month.
 
-Automatic route: `Rscript run_pipeline.R --fetch` (or the monthly GitHub
-Action) calls `fetch_espi_app()` in `R/fetch.R`. That function is untested
+Automatic route: `Rscript run_pipeline.R --fetch` (or a manual run of the
+GitHub Action with "fetch" ticked) calls `fetch_espi_app()` in `R/fetch.R`.
+The web tool is an optional supplement: the site's main source is the
+quarterly health target extracts. That function is untested
 against the live app; see the note at the top of the file.
 
 Manual route: open https://tewhatuora.shinyapps.io/ESPI_app/, download the CSV

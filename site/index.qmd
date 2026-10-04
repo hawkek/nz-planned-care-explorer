@@ -17,6 +17,6 @@ Loading...
 
 ## How districts compare {#comparison}
 
-::: {#comparison}
+::: {#comparison-body}
 Loading...
 :::

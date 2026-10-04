@@ -46,7 +46,7 @@ run_pipeline.R       runs all of the above
 data/processed/      tidy CSVs (published as downloads) and the revisions log
 site/                Quarto website; charts drawn in the browser with Observable Plot
 tests/testthat/      unit tests
-.github/workflows/   monthly fetch, check, build and publish to GitHub Pages
+.github/workflows/   test, check, build and publish to GitHub Pages
 docs/                data exploration, plan review, draft findings
 ```
 

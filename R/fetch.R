@@ -4,8 +4,8 @@
 # reached from the environment this code was written in, so the page
 # structure, the download button selector and the export format are
 # assumptions. Run fetch_espi_app() by hand once, inspect what it saves, and
-# adjust ESPI_DOWNLOAD_SELECTOR or read_espi_app_file() before relying on the
-# monthly Action.
+# adjust ESPI_DOWNLOAD_SELECTOR or read_espi_app_file() before relying on it.
+# Optional supplement only; the site's main source is the quarterly extracts.
 #
 # Manual fallback: download the CSV(s) from the app yourself and save them in
 # data/raw/espi_app/<YYYY-MM-DD>/ (the date you downloaded them). The pipeline

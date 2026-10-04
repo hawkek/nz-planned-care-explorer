@@ -16,7 +16,7 @@ All figures are **provisional**. Health NZ notes that its extracts "may be diffe
 
 ## The waiting list measures {#measures}
 
-The home page uses Health NZ's quarterly **health target waitlist extracts**. Each gives, for every month, district and specialty, the number of people waiting and the number who had waited **less than 120 days** (four months), for two lists:
+The Overview and Explore pages use Health NZ's quarterly **health target waitlist extracts**. Each gives, for every month, district and specialty, the number of people waiting and the number who had waited **less than 120 days** (four months), for two lists:
 
 - **First specialist assessment (FSA):** people referred and accepted for a first appointment with a specialist, timed from referral.
 - **Planned treatment (elective waitlist):** people given a commitment to treatment who are waiting for a procedure, timed from when they were added to the list. Health NZ describes the measure as "the proportion of people given a commitment to treatment waiting less than four months, as a proportion of all people waiting for a procedure". The treatment list also has an ethnicity breakdown, which this version does not show.
@@ -101,7 +101,7 @@ Loading...
 
 ## District comparison {#district-comparison}
 
-The home page compares districts in the latest month of the extract, using a **funnel plot**. For each district, the share of its waiting list waiting over four months is plotted against the size of its list. The lines show where 95% and 99.8% of districts would fall if they all shared the national share.
+The Overview page compares districts in the latest month of the extract, using a **funnel plot**. For each district, the share of its waiting list waiting over four months is plotted against the size of its list. The lines show where 95% and 99.8% of districts would fall if they all shared the national share.
 
 With waiting lists of thousands of patients, pure chance (binomial) limits are extremely narrow, and nearly every district would fall outside them. The spread between districts is much larger than chance alone would produce (the overdispersion factor is shown on the page). Following Spiegelhalter (2005, *Statistics in Medicine* 24:1185-1202), the limits add an estimated between-district variance, based on z-scores winsorised at the 10th and 90th centiles. A district outside the 99.8% limits differs from the national pattern by more than chance and normal variation between districts would explain. That is a prompt to look closer, not a verdict. The comparison is not adjusted for differences in need, such as age, deprivation, use of private care or referral thresholds. That is why it is called a district comparison rather than a fair comparison.
 
@@ -133,13 +133,13 @@ Loading...
 Loading...
 :::
 
-- **Health target waitlist extracts** (Health NZ, quarterly, from the health targets results page): first specialist assessment and planned treatment waitlists by month, district and specialty. This site holds the extracts for the four quarters of 2025/26. The latest covers July 2015 to June 2026. These are the source of the home page.
+- **Health target waitlist extracts** (Health NZ, quarterly, from the health targets results page): first specialist assessment and planned treatment waitlists by month, district and specialty. This site holds the extracts for the four quarters of 2025/26. The latest covers July 2015 to June 2026. These are the source of the Overview and Explore pages.
 - **OIA release HNZ00201361** (25 March 2026): ESPI 1, 2, 3, 5 and 8 by district and specialty, January 2019 to December 2025, released to an FYI.org.nz requester. It is the source of the More indicators page, and a cross-check for the extracts.
 - **ESPI web tool** (tewhatuora.shinyapps.io/ESPI_app): the latest 12 months. Optional monthly supplement, not yet in use.
 
 ## Downloads {#downloads}
 
-- [waitlist_monthly.csv](downloads/waitlist_monthly.csv): the waiting list data behind the home page (latest extract), by month, district and specialty. The `_lo` and `_hi` columns give the range for suppressed counts.
+- [waitlist_monthly.csv](downloads/waitlist_monthly.csv): the waiting list data behind the Overview and Explore pages (latest extract), by month, district and specialty. The `_lo` and `_hi` columns give the range for suppressed counts.
 - [extract_revisions.csv](downloads/extract_revisions.csv): every district and specialty cell that changed between consecutive extracts.
 - [espi_long.csv](downloads/espi_long.csv): the OIA release, every row, all indicators.
 - [national_monthly.csv](downloads/national_monthly.csv) and [district_monthly.csv](downloads/district_monthly.csv): totals with ranges.
