@@ -1,0 +1,45 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - data/*.json
+    - downloads/*.csv
+    - assets/*.js
+    - assets/*.txt
+    - assets/fonts/*
+
+website:
+  title: "NZ Planned Care Explorer"
+  description: "Independent tracker of New Zealand hospital waitlists since 2019, by district and specialty, using Health NZ ESPI data."
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: explore.qmd
+        text: Explore
+      - href: methods.qmd
+        text: Methods & data
+  page-footer:
+    left: |
+      Independent exploration of Health NZ public data.
+      Data: Health New Zealand | Te Whatu Ora (health target waitlist extracts; OIA release HNZ00201361).
+      Independent project, not endorsed by Health NZ. Not medical advice.
+      <span id="data-version"></span>
+    right: |
+      [Methods](methods.qmd) · [Source code](https://github.com/hawkek/dashboard)
+
+format:
+  html:
+    theme: [cosmo, assets/theme.scss]
+    css: assets/fonts.css
+    toc: false
+    page-layout: full
+    smooth-scroll: false
+    include-in-header:
+      text: |
+        <meta name="color-scheme" content="light dark">
+    include-after-body:
+      text: |
+        <script src="assets/d3.min.js"></script>
+        <script src="assets/plot.umd.min.js"></script>
+        <script src="assets/app.js"></script>

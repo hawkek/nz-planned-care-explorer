@@ -1,0 +1,13 @@
+source,measure,month,district,specialty,value,local_median
+OIA HNZ00201361,ESPI2,2019-02-01,Canterbury,General Surgery,11,406
+OIA HNZ00201361,ESPI2,2025-01-01,Hawke's Bay,General Surgery,830,517
+OIA HNZ00201361,ESPI2,2025-01-01,Hawke's Bay,Gynaecology,1247,622
+OIA HNZ00201361,ESPI2,2025-01-01,Hawke's Bay,Ophthalmology,1142,569
+OIA HNZ00201361,ESPI2,2025-01-01,Hawke's Bay,Orthopaedics,1503,863
+OIA HNZ00201361,ESPI2,2020-02-01,Southern,Orthopaedics,117,466
+Health target extract 2025-26-Q4,FSA,2025-01-01,Hawke's Bay,General Surgery,830,517
+Health target extract 2025-26-Q4,FSA,2025-01-01,Hawke's Bay,Gynaecology,1247,622
+Health target extract 2025-26-Q4,FSA,2025-01-01,Hawke's Bay,Ophthalmology,1142,569
+Health target extract 2025-26-Q4,FSA,2025-01-01,Hawke's Bay,Orthopaedics,1503,863
+Health target extract 2025-26-Q4,FSA,2020-02-01,Southern,Orthopaedics,117,466
+Health target extract 2025-26-Q4,Treatment,2026-06-01,Canterbury,Plastic Surgery [excluding burns],217.5,529.5

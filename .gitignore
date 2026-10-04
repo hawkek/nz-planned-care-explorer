@@ -1,0 +1,7 @@
+.Rhistory
+.RData
+.Rproj.user/
+/site/_site/
+/site/.quarto/
+/site/data/
+/site/downloads/

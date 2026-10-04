@@ -1,0 +1,248 @@
+/*-- scss:defaults --*/
+$web-font-path: false;
+$font-family-sans-serif: "Inter Variable", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+$headings-font-family: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman", serif;
+$body-bg: #F8F6F1;
+$body-color: #183044;
+$link-color: #2F746D;
+$navbar-bg: #F8F6F1;
+$navbar-fg: #183044;
+$footer-bg: #F8F6F1;
+$border-radius: 10px;
+
+/*-- scss:rules --*/
+
+/* Colour tokens. Charts read these at draw time (app.js css()).
+   --series-2 is a lighter step of the specified slate (#657F98), which is too
+   close to the teal to tell apart (normal-vision delta E 9.6); #7E93A8 clears
+   the floor (15.4). Comparison lines are also thinner and directly labelled. */
+:root {
+  --page: #F8F6F1;
+  --surface-1: #FFFFFF;
+  --text-primary: #183044;
+  --text-secondary: #46596A;
+  --text-muted: #5F6D7A;
+  --border: #D9DDD9;
+  --grid: #E6E8E4;
+  --axis: #B9BFBA;
+  --series-1: #2F746D;
+  --series-2: #7E93A8;
+  --slate: #657F98;
+  --accent: #C9834B;
+  --wash: rgba(47, 116, 109, 0.14);
+  --annotation: rgba(201, 131, 75, 0.09);
+  --trend: #8A949C;
+  --uncertainty: rgba(101, 127, 152, 0.12);
+  --link: #2F746D;
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+  --page: #101619;
+  --surface-1: #161D20;
+  --text-primary: #F1EEE7;
+  --text-secondary: #BAC7CB;
+  --text-muted: #9AA7AC;
+  --border: #2A3337;
+  --grid: rgba(186, 199, 203, 0.10);
+  --axis: #3A4549;
+  --series-1: #61B7AE;
+  --series-2: #6A7B92;
+  --slate: #8EA3B8;
+  --accent: #E3A064;
+  --wash: rgba(97, 183, 174, 0.2);
+  --annotation: rgba(227, 160, 100, 0.10);
+  --trend: #7E8B90;
+  --uncertainty: rgba(154, 167, 172, 0.16);
+  --link: #7CC6BD;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dark-tokens; }
+}
+:root[data-theme="dark"] { @include dark-tokens; }
+
+/* Base */
+body {
+  background: var(--page); color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--link); text-underline-offset: 2px; }
+h1, h2, h3, .navbar-title, .finding-title {
+  font-family: "Source Serif 4 Variable", "Source Serif 4", Georgia, serif;
+  color: var(--text-primary); letter-spacing: -0.005em;
+}
+h1.title { font-size: 2.25rem; font-weight: 600; line-height: 1.15; }
+h2 { font-size: 1.5rem; font-weight: 600; margin-top: 3rem; border-bottom: 0 !important; padding-bottom: 0; }
+h3 { font-size: 1.2rem; font-weight: 600; margin-top: 2rem; }
+p.subtitle, .subtitle { color: var(--text-secondary); font-size: 1.125rem; line-height: 1.45; }
+/* Two measures: prose at about 780px, charts and the explorer up to 1080px. */
+#quarto-document-content { max-width: 1080px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; }
+#title-block-header { margin-bottom: 1.5rem; max-width: 780px; }
+#quarto-document-content :is(p, ul, ol, h2, h3, .caveat, .cta, .takeaway, .meta-line, .finding-title, .chart-sub, .ex-question, .ex-answer, .ex-delta) { max-width: 780px; }
+@media (max-width: 575px) { #quarto-document-content { padding-left: 16px; padding-right: 16px; } }
+
+/* Header and footer: page colour, ink text, hairline only */
+.navbar, #quarto-header {
+  background: var(--page) !important; color: var(--text-primary);
+  box-shadow: none !important; border-bottom: 1px solid var(--border);
+}
+.navbar .navbar-title { font-weight: 600; font-size: 1.2rem; }
+.navbar .navbar-title, .navbar .nav-link, .navbar-brand { color: var(--text-primary) !important; }
+.navbar .nav-link { font-size: 0.9375rem; }
+.navbar .nav-link.active { text-decoration: underline; text-decoration-color: var(--text-primary); text-decoration-thickness: 2px; text-underline-offset: 8px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .navbar-toggler-icon { filter: invert(1); }
+}
+.nav-footer { font-size: 0.8125rem; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--page); }
+.nav-footer a { color: var(--link); }
+
+/* Chart blocks: no box by default; whitespace does the grouping. The main
+   explorer chart gets the one white card, so it stays visually dominant. */
+.card-viz { margin: 8px 0 32px; padding: 0; }
+.card-viz.primary {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px 20px 16px;
+}
+.takeaway { font-size: 1.0625rem; font-weight: 500; margin: 0 0 6px; color: var(--text-primary); line-height: 1.45; }
+.chart-sub { color: var(--text-muted); font-size: 0.875rem; margin: 0 0 12px; }
+.chart { width: 100%; min-height: 220px; }
+.chart svg { overflow: visible; max-width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.8125rem; color: var(--text-secondary); margin: 10px 0 0; }
+.legend .key { display: inline-block; width: 18px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
+.legend .key.thin { border-top-width: 1.5px; }
+.legend .key.band { height: 10px; border: 0; border-radius: 2px; }
+.legend .key.dash { border-top-style: dashed; }
+.legend .key.dot { width: 10px; height: 10px; border: 0; border-radius: 50%; }
+
+/* Technical layer: source, vintage, suppression. Visible, but secondary. */
+.meta-line {
+  font-size: 0.8125rem; color: var(--text-muted); margin: 4px 0 16px;
+  padding: 4px 0 4px 10px; border-left: 2px solid var(--border);
+}
+.meta-line a { color: var(--text-secondary); }
+.meta-line.quiet { font-size: 0.75rem; border-left: 0; padding: 0; margin: -20px 0 20px; }
+
+/* Headline figures: a strip, not a grid of boxes */
+.tiles {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0; margin: 20px 0 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.tile { padding: 14px 16px 14px 0; }
+.tile + .tile { padding-left: 16px; border-left: 1px solid var(--border); }
+.tile .label { font-size: 0.8125rem; color: var(--text-secondary); margin: 0; }
+.tile .value {
+  font-family: "Source Serif 4 Variable", Georgia, serif; font-size: 2.25rem; font-weight: 600;
+  line-height: 1.15; margin: 4px 0; display: inline-block; color: var(--text-primary); text-decoration: none;
+}
+.tile a.value:hover { text-decoration: underline; }
+.tile .value-sm { font-size: 1.5rem; }
+.tile .delta { font-size: 0.8125rem; color: var(--text-muted); margin: 0; }
+@media (max-width: 575px) {
+  .tile, .tile + .tile { padding: 12px 0; border-left: 0; }
+  .tile + .tile { border-top: 1px solid var(--border); }
+}
+
+/* Explorer: question, answer, then supporting detail */
+.ex-question { font-size: 1.0625rem; font-weight: 600; color: var(--text-primary); margin: 28px 0 4px; line-height: 1.4; }
+.ex-question .part { white-space: nowrap; }
+.ex-question .ex-compare { display: block; }
+.ex-question .sep { color: var(--text-muted); font-weight: 400; }
+.ex-question .ex-compare { font-weight: 400; color: var(--text-secondary); }
+.ex-answer { font-family: "Source Serif 4 Variable", Georgia, serif; margin: 2px 0 6px; color: var(--text-primary); line-height: 1.2; }
+.ex-answer .num {
+  display: block; font-size: 3rem; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap;
+  color: var(--text-primary); text-decoration: none;
+}
+.ex-answer .num:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+.ex-answer .rest { display: block; font-size: 1.3rem; font-weight: 500; color: var(--text-secondary); }
+.ex-delta { font-size: 0.9375rem; color: var(--text-secondary); margin: 0 0 12px; }
+.stats-secondary {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 24px;
+  margin: 4px 0 28px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.stats-secondary .label { font-size: 0.75rem; color: var(--text-muted); margin: 0; text-transform: none; }
+.stats-secondary .val { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 2px 0 0; }
+.stats-secondary .sub { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
+
+/* Findings */
+.finding { margin: 8px 0; }
+.finding-title { font-size: 1.3rem; font-weight: 600; margin: 32px 0 6px; line-height: 1.3; }
+.finding-num { color: var(--accent); margin-right: 6px; }
+
+/* Controls */
+.controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; margin: 12px 0 4px; }
+.controls-sticky { padding: 4px 0 16px; border-bottom: 1px solid var(--border); }
+.controls label { display: flex; flex-direction: column; font-size: 0.8125rem; color: var(--text-secondary); gap: 4px; }
+.controls select {
+  font-size: 0.9375rem; padding: 8px 10px; min-height: 44px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary);
+  max-width: calc(100vw - 32px);
+}
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-1); }
+.seg button {
+  font-size: 0.9375rem; padding: 8px 14px; min-height: 44px; border: 0; background: transparent;
+  color: var(--text-primary); cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--text-primary); color: var(--page); }
+.btn-link {
+  background: none; border: 0; padding: 8px 0; min-height: 44px; color: var(--link);
+  text-decoration: underline; cursor: pointer; font-size: 0.9375rem;
+}
+@media (max-width: 575px) {
+  .controls label, .controls select { width: 100%; }
+  .seg { width: 100%; }
+  .seg button { flex: 1; }
+}
+
+/* Tables */
+details.data-table { margin-top: 12px; font-size: 0.875rem; }
+details.data-table summary { cursor: pointer; color: var(--link); min-height: 32px; }
+.table-wrap { max-height: 360px; overflow: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-1); }
+.table-wrap table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.table-wrap th, .table-wrap td { padding: 6px 10px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
+.table-wrap th:first-child, .table-wrap td:first-child { text-align: left; }
+.table-wrap thead th { position: sticky; top: 0; background: var(--surface-1); color: var(--text-secondary); font-weight: 600; }
+.table-wrap.wrap { max-height: none; }
+.table-wrap.wrap th, .table-wrap.wrap td { white-space: normal; text-align: left; vertical-align: top; }
+
+/* Caveat: restrained, terracotta rule */
+.caveat {
+  border-left: 2px solid var(--text-primary); padding: 2px 0 2px 14px; margin: 16px 0;
+  color: var(--text-secondary);
+}
+.caveat-top { margin: 4px 0 28px; }
+.caveat-top p { margin: 0 0 4px; font-size: 0.9375rem; }
+.caveat-top p:first-child { font-family: "Source Serif 4 Variable", Georgia, serif; font-size: 1.125rem; color: var(--text-primary); }
+.caveat-top strong { font-weight: 600; }
+.cta { margin: 8px 0 8px; }
+.cta a { font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; }
+.status-pill { font-size: 0.8125rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
+
+/* Plot tooltips follow the theme */
+[aria-label="tip"] path { fill: var(--surface-1); stroke: var(--border); }
+
+@media (max-width: 575px) {
+  h1.title { font-size: 1.75rem; }
+  h2 { font-size: 1.3rem; margin-top: 2.25rem; }
+  h3 { font-size: 1.05rem; }
+  .finding-title { font-size: 1.1rem; margin-top: 24px; }
+  .takeaway { font-size: 1rem; line-height: 1.4; }
+  body { line-height: 1.45; }
+  .card-viz { margin-bottom: 24px; }
+  .ex-question { font-size: 0.9375rem; }
+  .ex-answer .num { font-size: 2.4rem; }
+  .ex-answer .rest { font-size: 1.05rem; }
+  .stats-secondary { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .stats-secondary .val { font-size: 0.9375rem; }
+  .card-viz .takeaway, .card-viz .chart-sub { font-size: 0.9375rem; }
+  .legend { margin-top: 14px; gap: 6px 14px; flex-direction: column; }
+  .tile .value { font-size: 1.9rem; }
+  .card-viz.primary { padding: 14px 12px; margin-left: -4px; margin-right: -4px; }
+  .navbar .navbar-title { font-size: 1.05rem; }
+  .legend .long { display: none; }
+}
+
+/* Quarto search button follows the ink colour in both themes */
+.navbar .aa-DetachedSearchButton, .navbar .aa-DetachedSearchButtonIcon, .navbar .aa-SubmitIcon { color: var(--text-primary) !important; background: transparent !important; border: 0 !important; }
+.navbar .aa-DetachedSearchButtonIcon svg { fill: currentColor; }

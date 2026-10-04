@@ -1,0 +1,5 @@
+::: {.caveat .caveat-top role="note"}
+**These are waiting-list trends, not estimates of how long you will wait.**
+
+Counts include people accepted onto a waiting list. Differences between districts may reflect referral and acceptance practices as well as waiting-list performance. Not medical advice. [What these numbers mean →](methods.qmd#caveats)
+:::

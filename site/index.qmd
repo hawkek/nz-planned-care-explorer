@@ -1,0 +1,22 @@
+---
+title: "New Zealand hospital waiting lists"
+subtitle: "How many people have waited more than four months for a first specialist assessment or planned treatment, by district and specialty, since 2015."
+---
+
+{{< include _caveat.qmd >}}
+
+## Three things to know {#things-to-know}
+
+::: {#findings}
+Loading...
+:::
+
+::: {.cta}
+[Explore any district and specialty →](explore.qmd)
+:::
+
+## How districts compare {#comparison}
+
+::: {#comparison}
+Loading...
+:::
