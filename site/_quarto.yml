@@ -18,10 +18,8 @@ website:
         text: My district
       - href: specialty.qmd
         text: Specialties
-      - href: fair.qmd
-        text: Fair comparisons
-      - href: target.qmd
-        text: Time to target
+      - href: compare.qmd
+        text: District comparison
       - href: methods.qmd
         text: Methods and data
   page-footer:

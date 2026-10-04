@@ -114,11 +114,11 @@ stored in `config/reference/health_target_fsa.csv`, and checked automatically
 once a live download covers June 2026. June 2026 is also the last month before
 NBRD, so it is the best available benchmark for the NBRS-era data.
 
-The **treatment** health target (72.6% in Q4 2025/26) is not comparable with
-ESPI 5. The OIA data gives 64.6% for December 2025 on the ESPI 5 basis. A gap
-that size points to a different denominator or a different start for the clock,
-in line with the NBRD definitions (time since waitlisted, all patients waiting
-for elective treatment).
+*Correction (4 October 2026):* an earlier version of this note said the
+treatment health target was not comparable with ESPI 5. That compared June
+2026 (72.6%) with December 2025 (64.6%), which are different months. Health
+NZ's detail extract (below) shows the elective waitlist measure closely tracks
+ESPI 5. The two are closely aligned but not identical.
 
 ### A secondary source: a Policywise article (insurance broker)
 
@@ -166,3 +166,63 @@ secondary. Even so, they are useful for checking revisions.
    `data/processed/flagged_cells.csv`.
 3. Revisions of a few percent to provisional figures are normal for this data,
    which is a further reason to log every revision (`revisions.csv`).
+
+## Health NZ's waitlist detail extract (Q4 2025/26, extracted 2 September 2026)
+
+Health NZ publishes, alongside the health target results, an Excel extract of
+the first specialist assessment (FSA) and elective treatment waitlists by
+month, district and specialty. For elective treatment it also includes
+ethnicity. The extract covers **January 2015 to June 2026** and is sourced from
+NBRS. It is stored unchanged in `data/raw/health_targets_extract/`.
+
+### How it compares
+
+Waiting more than four months is total waiting minus waiting under 120 days.
+Suppressed cells are taken at their midpoint.
+
+| Month | FSA, extract | ESPI 2, OIA | Elective, extract | ESPI 5, OIA |
+|---|---:|---:|---:|---:|
+| Jan 2019 | 10,201 | 10,250 | 4,358 | 4,404 |
+| Jan 2022 | 35,780 | 35,816 | 21,638 | 21,673 |
+| Jan 2024 | 74,451 | 74,466 | 30,001 | 30,072 |
+| Jan 2025 | 85,945 | 85,960 | 35,728 | 35,902 |
+| Feb 2025 | 86,126 | 83,042 | 34,982 | 35,172 |
+| Jun 2025 | 74,538 | 73,154 | 26,645 | 26,919 |
+| Dec 2025 | 74,878 | 75,162 | 27,082 | 27,742 |
+| Jun 2026 | 66,638 | (not in OIA) | 20,283 | (not in OIA) |
+
+- **FSA matches ESPI 2** almost exactly for most months, as you would expect
+  from the same NBRS source. In December 2025, 406 of 418 district and
+  specialty cells agree to within 3 patients. The largest difference is
+  Auckland Ophthalmology (3,685 in the OIA release, 3,449 in the extract).
+  February and June 2025 differ by 1,400 to 3,100, which looks like later
+  revisions.
+- **The Hawke's Bay January 2025 doubling is in the extract too**, so it is
+  in Health NZ's live data, not an OIA processing error.
+- **The extract reproduces the health target dashboard.** All 20 district FSA
+  results for June 2026 match the dashboard to 0.1 percentage points, and so
+  does the national 66.1%. That also confirms the values transcribed in
+  `config/reference/health_target_fsa.csv`.
+- **Elective treatment is close to ESPI 5** (within about 1% to 3%), but not
+  identical. The specialty names and groupings differ (25 against 19).
+
+### What the extract means for the project
+
+The plan's premise was that only the latest 12 months are public. **That is
+no longer true:** Health NZ publishes the FSA and elective waitlists by
+district and specialty back to 2015, updated quarterly, together with an
+interactive dashboard of district, region and ethnicity results. What remains
+distinctive about the tracker:
+
+- **ESPI 1, 3 and 8** history, which is only in the OIA release.
+- **Specialty-level exploration.** The health target dashboard shows district,
+  region and ethnicity, but (in the pages seen) no specialty view.
+- **Plain-English, mobile-first, neutral presentation** with counts as well as
+  percentages, and trends since 2015 or 2019.
+- **Archiving and revision tracking** of each release, which the official
+  tools do not offer.
+- Reconciliation across sources, and handling of the NBRD transition.
+
+The extract is also a **better primary source** than the ESPI web tool for
+ESPI 2 and 5-type measures. It is an official file download rather than a
+Shiny app to scrape, it goes back further, and it is updated quarterly.

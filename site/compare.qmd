@@ -1,7 +1,10 @@
 ---
-title: "Fair comparisons"
+title: "District comparison"
 subtitle: "Which districts have a larger or smaller share of their waiting list waiting over four months than their size would suggest?"
 ---
 
-::: {#page-fair}
+{{< include _caveat.qmd >}}
+
+
+::: {#page-compare}
 :::

@@ -73,6 +73,14 @@ build_districts <- function(long, indicators) {
   dist <- aggregate_counts(long, c("indicator", "district", "month"))
   dist_spec <- aggregate_counts(long, c("indicator", "district", "specialty", "month"))
   spec_latest <- latest_by_specialty(dist_spec, latest, prev)
+  # Rank districts by share of their own list waiting over four months in the
+  # latest month (1 = smallest share). Shares, not counts, so size does not
+  # decide the order.
+  ranks <- dist |>
+    dplyr::filter(month == latest, indicator %in% HEADLINE, !is.na(p_mid)) |>
+    dplyr::group_by(indicator) |>
+    dplyr::mutate(rank = rank(p_mid, ties.method = "min"), of = dplyr::n()) |>
+    dplyr::ungroup()
   out <- list()
   for (d in sort(unique(long$district))) {
     inds <- list()
@@ -98,7 +106,12 @@ build_districts <- function(long, indicators) {
                        month_label(latest), d, ind$phrase)
       )
     }
-    out[[d]] <- list(indicators = inds, specialties = specs)
+    rk <- dplyr::filter(ranks, district == d)
+    out[[d]] <- list(
+      indicators = inds, specialties = specs,
+      ranks = stats::setNames(lapply(seq_len(nrow(rk)), function(i)
+        list(rank = rk$rank[i], of = rk$of[i])), rk$indicator)
+    )
   }
   list(json = list(latest = mstr(latest), districts = out),
        table = dist, spec_table = dist_spec)
@@ -110,6 +123,11 @@ build_specialties <- function(long, indicators) {
   nat_spec <- aggregate_counts(long, c("indicator", "specialty", "month"))
   dist_spec <- aggregate_counts(long, c("indicator", "district", "specialty", "month"))
   now <- latest_by_specialty(dist_spec, latest, prev)
+  first_month <- min(long$month)
+  first <- dist_spec |>
+    dplyr::filter(month == first_month) |>
+    dplyr::select(district, specialty, indicator, first_lo = n_lo, first_hi = n_hi)
+  now <- dplyr::left_join(now, first, by = c("district", "specialty", "indicator"))
   out <- list()
   for (code in HEADLINE) {
     ind <- ind_row(indicators, code)
@@ -126,7 +144,8 @@ build_specialties <- function(long, indicators) {
         districts = data.frame(d = dd$district, nlo = dd$n_lo, nhi = dd$n_hi,
                                dlo = dd$d_lo, dhi = dd$d_hi,
                                plo = r4(dd$p_lo), phi = r4(dd$p_hi),
-                               prevlo = dd$prev_lo, prevhi = dd$prev_hi),
+                               prevlo = dd$prev_lo, prevhi = dd$prev_hi,
+                               firstlo = dd$first_lo, firsthi = dd$first_hi),
         takeaway = if (sum(dd$n_hi) > 0) sprintf(
           "In %s, the districts with the most %s patients %s were %s.%s",
           month_label(latest), sp, ind$phrase, top_list(dd$district, dd$n_lo, dd$n_hi),
@@ -141,7 +160,7 @@ build_specialties <- function(long, indicators) {
     }
     out[[code]] <- specs
   }
-  list(latest = mstr(latest), indicators = out)
+  list(latest = mstr(latest), first = mstr(first_month), indicators = out)
 }
 
 build_funnels <- function(district_table, indicators, population) {

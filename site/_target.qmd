@@ -1,4 +1,6 @@
 ---
+# Hidden for version 1: files starting with "_" are not rendered.
+# Rename to target.qmd and add it back to the navbar in _quarto.yml to restore.
 title: "Time to target"
 subtitle: "If the trend of the last 24 months simply continued, when would no one be waiting more than four months? Illustrative only, not a forecast."
 ---

@@ -3,6 +3,9 @@ title: "Methods and data"
 subtitle: "What these numbers mean, what they do not mean, and how they were produced."
 ---
 
+{{< include _caveat.qmd >}}
+
+
 ## The most important caveat {#caveats}
 
 ESPI counts only patients **accepted** onto a waiting list. If a district declines more referrals, its numbers can look better without anyone being seen sooner. That is why referral processing (ESPI 1) is shown alongside the headline measures. ESPI 1 is only a partial check, because it measures whether referrals were processed on time, not how many were accepted.
@@ -62,17 +65,19 @@ The national charts show a smoothed trend from a generalised additive model (neg
 
 ## Cross-check against the health targets {#health-targets}
 
-Health NZ's "shorter wait times for first specialist assessment" health target counts the share of patients waiting at the end of a period who have waited less than four months. That should equal 100% minus the ESPI 2 share of the list. For June 2025, Health NZ published 62.0%, and the OIA data gives 62.0% to 62.1%. The pipeline repeats this comparison automatically whenever both sources cover the same month. The treatment health target is a different measure from ESPI 5, and is not compared.
+Health NZ's "shorter wait times for first specialist assessment" health target counts the share of patients waiting at the end of a period who have waited less than four months. That should equal 100% minus the ESPI 2 share of the list. For June 2025, Health NZ published 62.0%, and the OIA data gives 62.0% to 62.1%. The pipeline repeats this comparison automatically whenever both sources cover the same month. The treatment health target works the same way for elective treatment. Health NZ's detail extract of that waitlist gives counts within about 1% to 3% of ESPI 5, so the two are closely aligned but not identical.
 
-## Fair comparisons {#fair-comparisons}
+## District comparison {#district-comparison}
 
 Districts are compared using a **funnel plot**. For each district, the share of its waiting list waiting over four months is plotted against the size of its list. The lines show where 95% and 99.8% of districts would fall if they all shared the national share.
 
-With waiting lists of thousands of patients, pure chance (binomial) limits are extremely narrow, and nearly every district would fall outside them. The spread between districts is much larger than chance alone would produce (the overdispersion factor is shown on the page). Following Spiegelhalter (2005, *Statistics in Medicine* 24:1185-1202), the limits add an estimated between-district variance, based on z-scores winsorised at the 10th and 90th centiles. A district outside the 99.8% limits differs from the national pattern by more than chance and normal variation between districts would explain. That is a prompt to look closer, not a verdict.
+With waiting lists of thousands of patients, pure chance (binomial) limits are extremely narrow, and nearly every district would fall outside them. The spread between districts is much larger than chance alone would produce (the overdispersion factor is shown on the page). Following Spiegelhalter (2005, *Statistics in Medicine* 24:1185-1202), the limits add an estimated between-district variance, based on z-scores winsorised at the 10th and 90th centiles. A district outside the 99.8% limits differs from the national pattern by more than chance and normal variation between districts would explain. That is a prompt to look closer, not a verdict. The comparison is not adjusted for differences in need, such as age, deprivation, use of private care or referral thresholds. That is why the page is called a district comparison rather than a fair comparison.
 
 The build plan proposed rates per 100,000 population. Those will be added once the population source Health NZ itself uses has been confirmed (see the [project repository](https://github.com/hawkek/dashboard)).
 
 ## Time to target {#time-to-target}
+
+*Not shown in this version.* Projections are held back until there is enough data under the new NBRD system: a trend fitted across the July 2026 change would mix two definitions. Health NZ's health targets are also framed as "95% within four months", not as zero waiting. The method below is kept for a later version.
 
 For each area, a log-linear quasi-Poisson trend is fitted to the last 24 months. A projection is shown only if:
 

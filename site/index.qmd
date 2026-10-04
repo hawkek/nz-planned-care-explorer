@@ -1,11 +1,11 @@
 ---
 title: "Are waits getting better or worse?"
-subtitle: "New Zealand hospital waitlists since January 2019, from Health NZ's elective services performance indicators (ESPI)."
+subtitle: "New Zealand hospital waitlists since January 2019, from Health NZ's elective services patient flow indicators (ESPI)."
 ---
+
+{{< include _caveat.qmd >}}
+
 
 ::: {#page-national}
 :::
 
-::: {.caveat}
-These figures count patients **accepted** onto a waitlist. A district that declines more referrals can look better without anyone being seen sooner, so referral processing ([ESPI 1](methods.qmd#espi1)) is shown alongside. The tracker cannot tell you how long you will wait: please talk to your GP or specialist service.
-:::

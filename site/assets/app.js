@@ -228,16 +228,30 @@
     return series.find((d) => d.date.getTime() === target);
   }
 
+  // Same neutral wording for rises and falls.
+  function diffText(now, then, suffix) {
+    const chLo = now.nlo - then.nhi, chHi = now.nhi - then.nlo;
+    if (chLo > 0) return `${fmtChange(chLo, chHi)} more than ${suffix}`;
+    if (chHi < 0) return `${fmtChange(-chHi, -chLo)} fewer than ${suffix}`;
+    return `about the same as ${suffix}`;
+  }
+
   function changeText(now, prev, isPct) {
     if (!prev) return "";
     if (isPct) return now.plo == null ? "Not reported this month" : `${fmtPctRange(prev.plo, prev.phi)} a year earlier`;
-    const chLo = now.nlo - prev.nhi, chHi = now.nhi - prev.nlo;
-    if (chLo > 0) return `${fmtChange(chLo, chHi)} more than a year earlier`;
-    if (chHi < 0) return `${fmtChange(-chHi, -chLo)} fewer than a year earlier`;
-    return "about the same as a year earlier";
+    return diffText(now, prev, "a year earlier");
   }
 
-  function tile(meta, code, series) {
+  // Change since the first month of the series (January 2019), with the
+  // relative change when it is meaningful.
+  function sinceStartText(series) {
+    const first = series[0], now = series[series.length - 1];
+    const base = (first.nlo + first.nhi) / 2, cur = (now.nlo + now.nhi) / 2;
+    const rel = base >= 500 ? `, ${(cur / base).toFixed(1)} times that level` : "";
+    return `${diffText(now, first, `in ${monthLabel(first.date)}`)}${rel}`;
+  }
+
+  function tile(meta, code, series, rank) {
     const ind = meta.indicators.find((i) => i.indicator === code);
     const isPct = code === "ESPI1" || code === "ESPI8";
     const now = series[series.length - 1];
@@ -245,7 +259,17 @@
       el("p", { class: "label" }, `${ind.short_name} (${DISPLAY[code]}), ${monthLabel(now.date)}`),
       el("a", { class: "value", href: defLink(code), title: "What this number means" },
         isPct ? (now.plo == null ? "not reported" : fmtPctRange(now.plo, now.phi)) : headline(now.nlo, now.nhi)),
-      el("p", { class: "delta" }, changeText(now, yearEarlier(series), isPct)));
+      el("p", { class: "delta" }, changeText(now, yearEarlier(series), isPct)),
+      isPct ? null : el("p", { class: "delta" }, sinceStartText(series)),
+      rank ? el("p", { class: "delta" },
+        el("a", { href: `${OFFSET}compare.html`, title: "How districts compare" },
+          `${ordinal(rank.rank)} smallest share of ${rank.of} districts`),
+        ` (${fmtPctRange(now.plo, now.phi)} of the list)`) : null);
+  }
+
+  function ordinal(n) {
+    const s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
   }
 
   function seriesTable(series, isPct, code) {
@@ -334,7 +358,7 @@
       };
       drawSpec();
       body.replaceChildren(
-        el("div", { class: "tiles" }, ["ESPI2", "ESPI5"].filter((c) => d.indicators[c]).map((c) => tile(meta, c, withDates(d.indicators[c].series)))),
+        el("div", { class: "tiles" }, ["ESPI2", "ESPI5"].filter((c) => d.indicators[c]).map((c) => tile(meta, c, withDates(d.indicators[c].series), (d.ranks || {})[c]))),
         el("h2", {}, `Trends in ${district}`),
         ...["ESPI2", "ESPI5"].filter((c) => d.indicators[c]).map((c) => indicatorCard(meta, c, d.indicators[c], { annotations: ann })),
         el("h2", {}, `Specialties in ${district}`),
@@ -370,13 +394,16 @@
       let rows = block.districts.filter((r) => (isShare ? r.plo != null : r.nhi > 0));
       rows = rows.slice().sort((a, b) => (isShare ? (b.plo + b.phi) - (a.plo + a.phi) : (b.nlo + b.nhi) - (a.nlo + a.nhi)));
       const natBlock = { series: block.series, takeaway: block.national_takeaway };
+      const ranked = block.districts.filter((r) => r.plo != null).sort((a, b) => (a.plo + a.phi) - (b.plo + b.phi));
+      const shareRank = new Map(ranked.map((r, i) => [r.d, `${i + 1} of ${ranked.length}`]));
       body.replaceChildren(
         rows.length === 0 ? el("p", { class: "takeaway" }, block.takeaway) : card({
           takeaway: block.takeaway,
           sub: `<a href="${defLink(code)}">${DISPLAY[code]}</a>, ${monthLabel(parseMonth(sp.latest))}. ${isShare ? "Share of each district's waiting list for this specialty." : "Districts with none waiting are not shown."}`,
           draw: (w) => barChart(w, rows, {
             label: "d", lo: isShare ? "plo" : "nlo", hi: isShare ? "phi" : "nhi", isPct: isShare,
-            tip: (r) => `${r.d}\n${fmtRange(r.nlo, r.nhi)} patients\n${fmtPctRange(r.plo, r.phi)} of ${fmtRange(r.dlo, r.dhi)} on the list`,
+            tip: (r) => `${r.d}\n${fmtRange(r.nlo, r.nhi)} patients\n${fmtPctRange(r.plo, r.phi)} of ${fmtRange(r.dlo, r.dhi)} on the list` +
+              (r.firstlo != null ? `\nIn ${monthShort(parseMonth(sp.first))}: ${fmtRange(r.firstlo, r.firsthi)}` : ""),
           }),
           legendItems: [["band", css("--series-1"), isShare ? "Share of list" : "Patients"], ["band", css("--wash"), "Range where counts of 1 to 4 are suppressed"]],
           table: dataTable([
@@ -385,6 +412,8 @@
             { label: "On the list", value: (r) => fmtRange(r.dlo, r.dhi) },
             { label: "Share of list", value: (r) => fmtPctRange(r.plo, r.phi) },
             { label: "A year earlier", value: (r) => (r.prevlo == null ? "not reported" : fmtRange(r.prevlo, r.prevhi)) },
+            { label: `In ${monthShort(parseMonth(sp.first))}`, value: (r) => (r.firstlo == null ? "not reported" : fmtRange(r.firstlo, r.firsthi)) },
+            { label: "Rank by share (1 = smallest)", value: (r) => (shareRank.get(r.d) ?? "") },
           ], block.districts),
         }),
         el("h2", {}, `${specialty} across New Zealand`),
@@ -409,7 +438,7 @@
       const out = pts.filter((p) => p.status !== "within limits");
       body.replaceChildren(card({
         takeaway: f.takeaway,
-        sub: `<a href="${defLink(code)}">${DISPLAY[code]}</a>, ${monthLabel(parseMonth(fu.latest))}. National share ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#fair-comparisons">methods</a>.`,
+        sub: `<a href="${defLink(code)}">${DISPLAY[code]}</a>, ${monthLabel(parseMonth(fu.latest))}. National share ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#district-comparison">methods</a>.`,
         draw: (w) => {
           const s1 = css("--series-1"), axis = css("--axis"), muted = css("--text-muted");
           return Plot.plot({
@@ -528,7 +557,7 @@
       const v = document.getElementById("data-version");
       if (v) v.textContent = `Data to ${monthLabel(parseMonth(meta.latest_month))}; version ${meta.data_version}, built ${meta.built}.`;
     }).catch(() => {});
-    const pages = { "page-national": pageNational, "page-district": pageDistrict, "page-specialty": pageSpecialty, "page-fair": pageFair, "page-target": pageTarget };
+    const pages = { "page-national": pageNational, "page-district": pageDistrict, "page-specialty": pageSpecialty, "page-compare": pageFair, "page-target": pageTarget };
     for (const [id, fn] of Object.entries(pages)) {
       const root = document.getElementById(id);
       if (root) fn(root).catch((e) => errorBox(root, e));

@@ -4,11 +4,13 @@ A free, open-source tracker of New Zealand hospital waitlists since January
 2019, by district and specialty, built on Health NZ's elective services patient
 flow indicators (ESPI).
 
-Health NZ's ESPI web tool shows only the latest 12 months. In March 2026 Health
-NZ released the history from January 2019 to December 2025 under the Official
-Information Act (HNZ00201361). This project joins the two into one continuous,
-checked and documented record, and publishes it as a static website with open
-data downloads.
+Health NZ's ESPI web tool shows the latest 12 months. In March 2026 Health NZ
+released the ESPI history from January 2019 to December 2025 under the Official
+Information Act (HNZ00201361). Health NZ also publishes a quarterly health
+target extract of the first specialist assessment and elective waitlists by
+district and specialty since 2015. This project brings these together into one
+checked, documented and archived record, and presents it in plain English with
+open data downloads.
 
 **Independent project, not endorsed by Health NZ. Not medical advice.** The data
 counts patients accepted onto waitlists; it cannot tell anyone how long they

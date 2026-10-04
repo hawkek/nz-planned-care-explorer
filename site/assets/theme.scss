@@ -129,6 +129,8 @@ details.data-table summary { cursor: pointer; color: var(--link); min-height: 32
   border-left: 3px solid var(--axis); padding: 8px 12px; margin: 16px 0;
   color: var(--text-secondary); background: var(--surface-1); border-radius: 0 8px 8px 0;
 }
+.caveat-top { font-size: 0.9375rem; margin: 4px 0 20px; }
+.caveat-top strong { color: var(--text-primary); }
 .status-pill { font-size: 0.8125rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--axis); white-space: nowrap; }
 
 /* Plot tooltips follow the theme */

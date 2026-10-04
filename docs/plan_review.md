@@ -107,17 +107,22 @@ change on charts.
 
 ## 6. Cross-checks and timing (added 4 October 2026)
 
+- **The information gap is smaller than the plan assumed.** Health NZ's
+  health target page publishes a quarterly Excel extract of the FSA and elective
+  waitlists by district and specialty (elective also by ethnicity) from January
+  2015 to June 2026. The tracker's value now rests on specialty-level
+  exploration, ESPI 1, 3 and 8 history, plain-English presentation, and
+  archiving and revision tracking, not on being the only source of history.
+  See `docs/data_exploration.md`. The extract should probably become the
+  primary source for the headline measures, with the ESPI web tool as a monthly
+  supplement.
+
 - **Health targets.** The published June 2025 first specialist assessment
   result (62.0% waiting under four months) equals 100% minus the ESPI 2 share
   of the list in the OIA data (62.0% to 62.1%). The tracker's headline measure
   is therefore the complement of an official, widely quoted figure. That makes
   it easier to explain, and a mismatch would be immediately visible. District
   results for June 2026 are stored and checked automatically.
-- **The health target dashboard links to "current & historical detail data for
-  FSA Waitlist".** Check what that dataset holds before launch. If it already
-  gives district and specialty history, it narrows the gap the tracker fills
-  (and becomes a second source to reconcile against). If it gives district
-  history only, the specialty dimension and ESPI 5 remain distinctive.
 - **A data quality issue in the release:** Hawke's Bay, January 2025, looks
   double-counted. Raise it with Health NZ alongside the other questions.
 - **Election timing.** Wait times are being quoted in the 2026 election
