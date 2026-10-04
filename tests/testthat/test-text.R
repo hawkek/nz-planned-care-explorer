@@ -31,4 +31,6 @@ test_that("headline figures round to 10 or 100", {
 
 test_that("large headline figures round to the nearest 100", {
   expect_equal(fmt_count_range(66633, 66678), "about 66,700")
+  expect_equal(fmt_change(56402, 56477), "about 56,400")
+  expect_equal(fmt_change(7880, 7920), "about 7,900")
 })
