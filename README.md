@@ -36,40 +36,54 @@ R/read_extract.R     read the quarterly extracts; vintages and revisions
 R/explorer.R         explorer series, findings, district comparison
 R/checks_extract.R   checks for the extracts, including against published results
 R/read_oia.R         read ESPI tables; "<5" becomes the range 1 to 4
-R/fetch.R            download from the web tool (headless Chrome; untested, see file)
+R/read_espi_app.R    read manual exports from the ESPI web tool (optional)
 R/clean.R            combine sources (latest retrieval wins), log revisions
 R/checks.R           data checks; any error stops publishing
 R/models.R           aggregates with ranges, GAM trends, funnel limits, projections
 R/text.R             neutral plain-English takeaway sentences
 R/export.R           JSON for the site
 run_pipeline.R       runs all of the above
-data/processed/      tidy CSVs (published as downloads) and the revisions log
+data/processed/      tidy CSVs, generated on every build (not stored in git)
 site/                Quarto website; charts drawn in the browser with Observable Plot
 tests/testthat/      unit tests
-.github/workflows/   monthly fetch, check, build and publish to GitHub Pages
+.github/workflows/   test, check, build and publish to GitHub Pages
 docs/                data exploration, plan review, draft findings
 ```
 
 ## Running it
 
 Requirements: R 4.3 or later with `dplyr, jsonlite, lubridate, MASS, mgcv, readr,
-readxl, tibble` (plus `testthat` for tests and `chromote` for fetching), and
-[Quarto](https://quarto.org) 1.6 or later.
+readxl, tibble` (plus `testthat` for tests), and
+[Quarto](https://quarto.org) (tested with 1.6.42 and 1.11.5).
 
 ```sh
 Rscript tests/testthat.R          # unit tests
 Rscript run_pipeline.R            # read, check, model, export
-Rscript run_pipeline.R --fetch    # also try to download from the web tool
 quarto preview site               # view the site locally
 ```
 
 To add a month by hand, save the web tool export in
 `data/raw/espi_app/<YYYY-MM-DD>/` and rerun the pipeline.
 
+## Site settings
+
+Two optional settings are `<meta>` tags near the top of `site/_quarto.yml`.
+Both are off while empty.
+
+- `goatcounter`: a [GoatCounter](https://www.goatcounter.com/) site code
+  (for example `nzplannedcare` for nzplannedcare.goatcounter.com). When set,
+  page views are counted without cookies or personal data, and a privacy note
+  appears on the methods page.
+- `contact-email`: a public address for corrections. When set, it appears in
+  the footer and on the methods page next to the GitHub issues link.
+
 ## Publishing
 
 1. In the GitHub repository settings, set Pages → Source to "GitHub Actions".
-2. Push to `main`. The workflow tests, rebuilds and deploys the site.
+2. Pull requests are tested and built (the rendered site is attached to the
+   run as `site-preview`) but not published. Merging to `main` tests,
+   rebuilds and deploys the site to
+   https://hawkek.github.io/nz-planned-care-explorer/.
 3. Each quarter, add Health NZ's new waitlist detail extract to
    `data/raw/health_targets_extract/<YYYY-YY-Qn>/` and push. If a data check
    fails, the run fails, GitHub emails the owner, and the last good site stays

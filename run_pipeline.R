@@ -1,8 +1,7 @@
 #!/usr/bin/env Rscript
 # Run the whole pipeline: read sources, combine, check, model, export.
 #
-#   Rscript run_pipeline.R            # use whatever raw files are present
-#   Rscript run_pipeline.R --fetch    # first try to download from the web tool
+#   Rscript run_pipeline.R
 #
 # Stops before writing any published output if a data check fails.
 
@@ -11,14 +10,7 @@ suppressPackageStartupMessages({
 })
 for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f)
 
-args <- commandArgs(trailingOnly = TRUE)
 run_date <- Sys.Date()
-
-if ("--fetch" %in% args) {
-  message("Fetching from the ESPI web tool")
-  files <- fetch_espi_app()
-  message("Saved: ", paste(basename(files), collapse = ", "))
-}
 
 message("Reading OIA history")
 oia <- read_oia_dir()

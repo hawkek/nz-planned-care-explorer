@@ -26,7 +26,7 @@ website:
       Independent project, not endorsed by Health NZ. Not medical advice.
       <span id="data-version"></span>
     right: |
-      [Methods](methods.qmd) · [Source code](https://github.com/hawkek/dashboard)
+      [Methods](methods.qmd) · [Source code](https://github.com/hawkek/nz-planned-care-explorer)<span class="contact-wrap" hidden> · <a class="contact-email" href="#">Contact</a></span>
 
 format:
   html:
@@ -38,6 +38,14 @@ format:
     include-in-header:
       text: |
         <meta name="color-scheme" content="light dark">
+        <!-- Site settings (see README, "Site settings"). Leave empty to turn off. -->
+        <!-- GoatCounter site code, e.g. "nzplannedcare" for nzplannedcare.goatcounter.com -->
+        <meta name="goatcounter" content="nz-planned-care-explorer">
+        <!-- Public contact address for corrections -->
+        <meta name="contact-email" content="">
+    include-before-body:
+      text: |
+        <a class="skip-link" href="#quarto-document-content">Skip to content</a>
     include-after-body:
       text: |
         <script src="assets/d3.min.js"></script>

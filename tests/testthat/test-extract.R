@@ -91,3 +91,13 @@ test_that("a national health target mismatch is an error, a district one a warni
                         pct_within_4_months = 70, vintage = "2025-26-Q4", source = "t")
   expect_equal(check_extract_health_target(d, ref, "FSA")$severity, "error")
 })
+
+test_that("explorer data carries flagged cells with their month index", {
+  m <- seq(as.Date("2024-09-01"), by = "month", length.out = 7)
+  d <- dplyr::bind_rows(lapply(seq_along(m), function(k)
+    ext_row(month = m[k], under = c(400, 400), total = if (k == 4) c(1600, 1600) else c(1000, 1000))))
+  ex <- build_explorer(latest_vintage(tidy_extract(d)), "FSA")
+  expect_equal(nrow(ex$flags), 1)
+  expect_equal(ex$flags$i, 3)            # zero-based index of the fourth month
+  expect_equal(ex$flags$dev, 600)
+})

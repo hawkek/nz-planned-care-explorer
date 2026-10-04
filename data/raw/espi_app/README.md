@@ -1,16 +1,18 @@
-# ESPI web tool downloads
+# ESPI web tool exports (optional)
 
-One folder per retrieval, named by the date of download (`YYYY-MM-DD`), holding
-the files exactly as downloaded. Never edit these files; the pipeline reads
-every folder and uses the most recent figures for each month.
+The site's main source is the quarterly health target extracts in
+`data/raw/health_targets_extract/`. Exports from the ESPI web tool
+(https://tewhatuora.shinyapps.io/ESPI_app/) can be added by hand as a
+supplement: save the CSV(s) here in a new folder named by the download date
+(`YYYY-MM-DD`), unchanged, and rerun the pipeline. Where a month appears in
+more than one source, the most recent retrieval is used and the differences
+are written to `data/processed/reconciliation.csv`.
 
-Automatic route: `Rscript run_pipeline.R --fetch` (or the monthly GitHub
-Action) calls `fetch_espi_app()` in `R/fetch.R`. That function is untested
-against the live app; see the note at the top of the file.
+The reader (`R/read_espi_app.R`) expects the same eight columns as the OIA
+appendices (`REGION_NAME, DHB_NAME, SPECIALTY_NAME, MONTH_YEAR, NUMERATOR,
+DENOMINATOR, ESPI_DEFINITION, PERCENTAGE`). If an export differs, the pipeline
+stops with a clear error.
 
-Manual route: open https://tewhatuora.shinyapps.io/ESPI_app/, download the CSV
-export for each indicator, and save the files here in a new dated folder.
-The reader expects the same eight columns as the OIA appendices
-(`REGION_NAME, DHB_NAME, SPECIALTY_NAME, MONTH_YEAR, NUMERATOR, DENOMINATOR,
-ESPI_DEFINITION, PERCENTAGE`). If the export differs, the pipeline stops with
-a clear error, and `read_espi_app_file()` needs adjusting.
+An automated headless-browser download was removed in October 2026: it could
+not be tested, and the quarterly extracts replace it. It is in the git history
+(`R/fetch.R`) if needed.

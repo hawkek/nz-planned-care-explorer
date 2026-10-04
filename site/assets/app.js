@@ -188,6 +188,8 @@
       marks.push(Plot.ruleY([targetLine], { stroke: accent, strokeWidth: 1.5, strokeDasharray: "5,4" }));
       endLabels.push({ date: series[series.length - 1].date, y: targetLine, text: `Target ${Math.round(targetLine * 100)}%`, fill: css("--text-secondary") });
     }
+    const flagged = series.filter((d) => d.flag && !Number.isNaN(val(d)));
+    if (flagged.length) marks.push(Plot.dot(flagged, { x: "date", y: val, r: 6, fill: "none", stroke: accent, strokeWidth: 1.75 }));
     const last = series.filter((d) => !Number.isNaN(val(d))).pop();
     if (last) marks.push(Plot.dot([last], { x: "date", y: val, r: 4, fill: s1, stroke: css("--surface-1"), strokeWidth: 2 }));
     if (last && label) endLabels.push({ date: last.date, y: val(last), text: label, fill: ink, weight: 600 });
@@ -208,7 +210,7 @@
     marks.push(Plot.tip(series, Plot.pointerX({
       x: "date", y: val,
       title: (d) => `${monthLabel(d.date)}\n${Number.isNaN(val(d)) ? "Not reported" : isPct ? fmtPctRange(d.plo, d.phi, 1) : fmtRange(d.nlo, d.nhi) + " patients"}` +
-        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d),
+        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d) + (d.flag ? `\n${FLAG_NOTE}` : ""),
     })));
     return Plot.plot({
       width: w, height: h, marginLeft: isPct ? 44 : 56, marginRight, style: plotStyle(),
@@ -361,6 +363,18 @@
     });
   }
 
+  // Mark months where a flagged cell (a likely reporting error, kept as
+  // released) contributes at least 1% of this series' value.
+  function markFlags(ex, area, spec, rows) {
+    for (const f of ex.flags || []) {
+      if (!(area === "New Zealand" || area === f.d) || !(spec === "All" || spec === f.s)) continue;
+      const r = rows[f.i];
+      if (r && r.nlo != null && Math.abs(f.dev) >= 0.01 * Math.max(1, (r.nlo + r.nhi) / 2)) r.flag = true;
+    }
+    return rows;
+  }
+  const FLAG_NOTE = "Possible reporting error, shown as released (see methods)";
+  const flagLegend = (rows) => (rows.some((r) => r.flag) ? [["ring", css("--accent"), FLAG_NOTE]] : []);
   const latestRow = (rows) => rows.filter((r) => r.nlo != null).pop();
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   // Change with an arrow and words, never colour: "↓ about 7,900 (11%) since June 2025".
@@ -404,7 +418,7 @@
     if (f) renderFindings(f, findings, ex, ann);
     const e = document.getElementById("explorer");
     if (e) renderExplorer(e, meta, ex, ann);
-    const c = document.getElementById("comparison");
+    const c = document.getElementById("comparison-body");
     if (c) renderComparison(c, await load("funnel_extract.json"));
   }
 
@@ -425,12 +439,12 @@
         }));
       }
       const x = ex[fd.measure];
-      const rows = explorerRows(x, fd.series).map((r, j) => ({ ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] }));
+      const rows = markFlags(x, "New Zealand", "All", explorerRows(x, fd.series)).map((r, j) => ({ ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] }));
       return el("div", { class: "finding" }, head, card({
         takeaway: fd.text,
         draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting over 4 months", label: "New Zealand" }),
-        legendItems: [["", css("--series-1"), "Waiting more than four months"], ["", css("--text-muted"), "Smoothed trend with 95% interval"], ...annLegend(ann)],
-        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) }], rows.filter((r) => r.nlo != null).reverse()),
+        legendItems: [["", css("--series-1"), "Waiting more than four months"], ["", css("--text-muted"), "Smoothed trend with 95% interval"], ...flagLegend(rows), ...annLegend(ann)],
+        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : "") }], rows.filter((r) => r.nlo != null).reverse()),
       }));
     }));
   }
@@ -462,7 +476,7 @@
     function draw() {
       const x = ex[measure];
       const key = `${area}|${spec}`;
-      const rows = explorerRows(x, key);
+      const rows = markFlags(x, area, spec, explorerRows(x, key));
       const now = latestRow(rows);
       const where = `${spec === "All" ? "" : `${spec}, `}${area}`;
       if (!now) {
@@ -505,9 +519,10 @@
       const countCard = card({
         takeaway: "",
         sub: "Monthly trend",
+        alt: `Monthly trend: people in ${where} who had waited more than four months for ${MEASURE_NOUN[measure]}, ${monthLabel(rows.find((r) => r.nlo != null).date)} to ${monthLabel(now.date)}. Values are in the data table below.`,
         primary: true,
         draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People", label: area, big: true }),
-        legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...annLegend(ann)],
+        legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...flagLegend(rows), ...annLegend(ann)],
         table: null,
       });
       const pctRows = rows.map((r) => ({ ...r, nlo: null, nhi: null, plo: r.ulo, phi: r.uhi }));
@@ -517,7 +532,7 @@
         sub: cmpArea && !hasCmp ? `${cmpLabel} has no data for this list.` : null,
         draw: (w) => lineChart(w, { series: pctRows, isPct: true, annotations: ann, yLabel: "Waiting under 4 months", targetLine: 0.95, label: area,
           compare: hasCmp ? [{ series: cmpPct, label: cmpArea }] : [] }),
-        legendItems: [["", css("--series-1"), where], ...(hasCmp ? [["thin", css("--series-2"), cmpLabel]] : []), ["dash", css("--accent"), "Health target: 95% by 2030"]],
+        legendItems: [["", css("--series-1"), where], ...(hasCmp ? [["thin", css("--series-2"), cmpLabel]] : []), ["dash", css("--accent"), "Health target: 95% by 2030"], ...flagLegend(rows)],
       });
 
       const tableCols = [
@@ -525,6 +540,7 @@
         { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi), raw: (r) => (r.nlo === r.nhi ? r.nlo : `${r.nlo}-${r.nhi}`) },
         { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi), raw: (r) => (r.tlo === r.thi ? r.tlo : `${r.tlo}-${r.thi}`) },
         { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1), raw: (r) => (r.ulo == null ? "" : `${(100 * r.ulo).toFixed(1)}-${(100 * r.uhi).toFixed(1)}`) },
+        { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : ""), raw: (r) => (r.flag ? "Possible reporting error (shown as released)" : "") },
       ];
       const shown = rows.filter((r) => r.nlo != null).reverse();
       const tableBlock = el("div", {},
@@ -728,7 +744,34 @@
 
   // ---- Boot -----------------------------------------------------------------
 
+  // Optional site settings from <meta> tags in _quarto.yml: a GoatCounter
+  // code for privacy-friendly page counts, and a public contact address.
+  function applySiteSettings() {
+    const meta = (n) => ((document.querySelector(`meta[name="${n}"]`) || {}).content || "").trim();
+    const gc = meta("goatcounter");
+    if (/^[a-z0-9-]+$/i.test(gc)) {
+      const sc = document.createElement("script");
+      sc.async = true;
+      sc.src = "https://gc.zgo.at/count.js";
+      sc.dataset.goatcounter = `https://${gc}.goatcounter.com/count`;
+      document.head.append(sc);
+      document.querySelectorAll(".analytics-note").forEach((e) => { e.hidden = false; });
+    }
+    const email = meta("contact-email");
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      document.querySelectorAll(".contact-email").forEach((a) => {
+        a.href = `mailto:${email}`;
+        if (a.textContent === "Contact") a.textContent = email;
+      });
+      document.querySelectorAll(".contact-wrap").forEach((e) => { e.hidden = false; });
+    }
+  }
+
   async function boot() {
+    applySiteSettings();
+    // The skip link must be the first thing a keyboard user reaches.
+    const skip = document.querySelector(".skip-link");
+    if (skip) document.body.prepend(skip);
     load("meta.json").then((meta) => {
       const v = document.getElementById("data-version");
       if (v) v.textContent = `Waiting lists to ${monthLabel(parseMonth(meta.extract.latest_month))} (extract ${meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3")}); version ${meta.data_version}, built ${meta.built}.`;
@@ -738,9 +781,10 @@
       const root = document.getElementById(id);
       if (root) fn(root).catch((e) => errorBox(root, e));
     }
-    if (document.getElementById("explorer")) {
-      pageHome().catch((e) => errorBox(document.getElementById("explorer"), e));
-    }
+    // Findings, explorer and comparison can sit on different pages; draw
+    // whichever are present.
+    const homeRoot = ["findings", "explorer", "comparison-body"].map((id) => document.getElementById(id)).find(Boolean);
+    if (homeRoot) pageHome().catch((e) => errorBox(homeRoot, e));
     if (document.getElementById("checks-table")) pageMethods().catch(console.error);
   }
 

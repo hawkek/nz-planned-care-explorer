@@ -113,6 +113,7 @@ p.subtitle, .subtitle { color: var(--text-secondary); font-size: 1.125rem; line-
 .legend .key.band { height: 10px; border: 0; border-radius: 2px; }
 .legend .key.dash { border-top-style: dashed; }
 .legend .key.dot { width: 10px; height: 10px; border: 0; border-radius: 50%; }
+.legend .key.ring { width: 11px; height: 11px; border: 1.75px solid; border-radius: 50%; background: transparent; }
 
 /* Technical layer: source, vintage, suppression. Visible, but secondary. */
 .meta-line {
@@ -246,3 +247,15 @@ details.data-table summary { cursor: pointer; color: var(--link); min-height: 32
 /* Quarto search button follows the ink colour in both themes */
 .navbar .aa-DetachedSearchButton, .navbar .aa-DetachedSearchButtonIcon, .navbar .aa-SubmitIcon { color: var(--text-primary) !important; background: transparent !important; border: 0 !important; }
 .navbar .aa-DetachedSearchButtonIcon svg { fill: currentColor; }
+
+/* Keyboard focus: always visible, in ink, on every interactive element */
+a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--text-primary); outline-offset: 2px; border-radius: 4px; box-shadow: none;
+}
+.seg button:focus-visible { outline-offset: -3px; }
+.skip-link {
+  position: absolute; left: 8px; top: -48px; z-index: 2000; padding: 8px 12px;
+  background: var(--text-primary); color: var(--page) !important; border-radius: 6px; text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
+.navbar .nav-link:focus-visible, .navbar .navbar-brand:focus-visible { outline: 2px solid var(--text-primary) !important; outline-offset: 2px; box-shadow: none !important; }

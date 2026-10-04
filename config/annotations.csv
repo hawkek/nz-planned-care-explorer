@@ -1,5 +1,5 @@
 start,end,label,scope,verified
-2020-03-26,2020-04-27,COVID-19 Alert Level 4 nationally,National,no
-2021-08-18,2021-08-31,COVID-19 Delta outbreak: Alert Level 4 nationally,National,no
-2021-09-01,2021-12-02,Auckland under Alert Level 3 or 4,Auckland region,no
+2020-03-26,2020-04-27,COVID-19 Alert Level 4 nationally,National,yes
+2021-08-18,2021-08-31,COVID-19 Delta outbreak: Alert Level 4 nationally,National,yes
+2021-09-01,2021-12-02,Auckland under Alert Level 3 or 4,Auckland region,yes
 2026-07-01,2026-07-31,Data system changes from NBRS to NBRD,National,yes

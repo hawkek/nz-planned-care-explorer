@@ -233,7 +233,24 @@ Still open for you to decide:
   suggested. The methods page says a rounded figure can fall just outside
   the exact range, which stays in the tables.
 
-## 8. What is left for version 1
+## 8. Decisions made (4 October 2026)
+
+| # | Decision | Outcome | Done in the repo |
+|---|---|---|---|
+| 1 | Data licence | Ask Health NZ to confirm; publish meanwhile on the stated CC BY 4.0 basis; remove downloads if asked | `DATA_LICENCE.md`, methods page; draft email in `docs/health_nz_email.md` |
+| 2 | OIA response letter (names the requester) | Removed; link to the public FYI.org.nz request instead (it remains in git history) | `data/raw/oia_HNZ00201361/README.md`, methods sources |
+| – | Repository name | Renamed to `hawkek/nz-planned-care-explorer` | Links updated |
+| 3 | Web address | hawkek.github.io/nz-planned-care-explorer for now; custom domain later if needed | README |
+| 4 | Version 1 scope | Keep the district comparison and the referral and prioritisation page; revisit after user testing | No change |
+| 5 | ESPI web tool download | Removed (untested, replaced by the extracts); manual exports still readable | `R/read_espi_app.R`; workflow and DESCRIPTION simplified |
+| 6 | Flagged data | Circle affected months on charts, with a tooltip and table note; values unchanged | `R/explorer.R`, `site/assets/app.js` |
+| 7 | Analytics | GoatCounter (no cookies, no personal data) | Setting in `site/_quarto.yml`; privacy note appears when set |
+| 8 | Contact | GitHub issues plus a dedicated email address | Setting in `site/_quarto.yml`; shown in footer and methods when set |
+| 9 | Launch timing | Soft launch in October; public launch after the 7 November 2026 election (second half of November) | `docs/launch_checklist.md` |
+| 10a | Processed CSVs in git | Stop committing them; rebuilt on every run | `.gitignore`, `data/processed/README.md` |
+| 10b | Ethnicity view | After launch, if user testing supports the explorer | `docs/launch_checklist.md` |
+
+## 9. What is left for version 1
 
 1. Run `fetch_espi_app()` by hand, fix the selector or reader, and commit the
    first export. Then check `reconciliation.csv` for October to December 2025.
