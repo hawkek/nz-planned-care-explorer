@@ -11,12 +11,8 @@ subtitle: "How many people have waited more than four months for a first special
 Loading...
 :::
 
-## Explore {#explore}
-
-Choose what people are waiting for, an area and a specialty. The link in your browser updates, so you can share exactly what you are looking at.
-
-::: {#explorer}
-Loading...
+::: {.cta}
+[Explore any district and specialty →](explore.qmd)
 :::
 
 ## How districts compare {#comparison}

@@ -1,3 +1,5 @@
 ::: {.caveat .caveat-top role="note"}
-**Trends in public hospital planned-care waiting lists, not estimates of how long any one person will wait.** The figures count only patients **accepted** onto a list: a district that declines more referrals can look better without anyone being seen sooner. Not medical advice; talk to your GP or specialist service about your own care. [What these numbers mean](methods.qmd#caveats).
+**These are waiting-list trends, not estimates of how long you will wait.**
+
+Counts include people accepted onto a waiting list. Differences between districts may reflect referral and acceptance practices as well as waiting-list performance. Not medical advice. [What these numbers mean →](methods.qmd#caveats)
 :::

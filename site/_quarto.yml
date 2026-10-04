@@ -14,13 +14,14 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Waiting lists
-      - href: context.qmd
-        text: More indicators
+        text: Overview
+      - href: explore.qmd
+        text: Explore
       - href: methods.qmd
-        text: Methods and data
+        text: Methods & data
   page-footer:
     left: |
+      Independent exploration of Health NZ public data.
       Data: Health New Zealand | Te Whatu Ora (health target waitlist extracts; OIA release HNZ00201361).
       Independent project, not endorsed by Health NZ. Not medical advice.
       <span id="data-version"></span>
@@ -32,7 +33,7 @@ format:
     theme: [cosmo, assets/theme.scss]
     css: assets/fonts.css
     toc: false
-    page-layout: article
+    page-layout: full
     smooth-scroll: false
     include-in-header:
       text: |

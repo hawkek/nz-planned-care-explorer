@@ -25,10 +25,10 @@ test_that("takeaways never mention blame words", {
   expect_false(grepl("fail|poor|worse|better|blame", txt, ignore.case = TRUE))
 })
 
-test_that("rounded figures stay inside the possible range", {
-  expect_equal(fmt_count_range(5732, 5735), "about 5,734")
+test_that("headline figures round to 10 or 100", {
+  expect_equal(fmt_count_range(5732, 5735), "about 5,730")
 })
 
-test_that("rounding falls back to a finer step that stays in range", {
-  expect_equal(fmt_count_range(66633, 66678), "about 66,660")
+test_that("large headline figures round to the nearest 100", {
+  expect_equal(fmt_count_range(66633, 66678), "about 66,700")
 })

@@ -1,5 +1,5 @@
 ---
-title: "More indicators"
+title: "Referral and prioritisation indicators"
 subtitle: "Referral processing, the treatment threshold and prioritisation tools, January 2019 to December 2025."
 ---
 

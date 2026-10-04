@@ -31,13 +31,10 @@
     if (lo === hi) return fmtInt(lo);
     const mid = (lo + hi) / 2;
     if ((hi - lo) / Math.max(mid, 1) <= 0.05 && mid >= 1000) {
-      // Round as coarsely as possible without leaving the possible range.
-      let rounded = Math.round(mid);
-      for (const step of mid >= 10000 ? [100, 10, 1] : [10, 1]) {
-        const r = Math.round(mid / step) * step;
-        if (r >= lo && r <= hi) { rounded = r; break; }
-      }
-      return `about ${fmtInt(rounded)}`;
+      // Same rule as fmt_count_range() in R/text.R: nearest 100 from 10,000,
+      // nearest 10 below. The exact range is in the data tables.
+      const step = mid >= 10000 ? 100 : 10;
+      return `about ${fmtInt(Math.round(mid / step) * step)}`;
     }
     return fmtRange(lo, hi);
   }
@@ -108,15 +105,15 @@
   }
 
   function legend(items) {
-    return el("div", { class: "legend", "aria-hidden": "true" }, items.map(([kind, color, text]) =>
-      el("span", {}, el("span", { class: `key ${kind}`, style: kind === "band" || kind === "dot" ? `background:${color}` : `border-color:${color}` }), text)));
+    return el("div", { class: "legend", "aria-hidden": "true" }, items.map(([kind, color, text, cls]) =>
+      el("span", { class: cls || null }, el("span", { class: `key ${kind}`, style: kind === "band" || kind === "dot" ? `background:${color}` : `border-color:${color}` }), text)));
   }
 
   // A card: takeaway sentence, optional subtitle, responsive chart, legend, table.
   function card({ takeaway, sub, draw, legendItems, table, alt, primary }) {
     const chart = el("div", { class: "chart", role: "img", "aria-label": alt || takeaway });
     const c = el("section", { class: primary ? "card-viz primary" : "card-viz" },
-      el("p", { class: "takeaway" }, takeaway),
+      takeaway ? el("p", { class: "takeaway" }, takeaway) : null,
       sub ? el("p", { class: "chart-sub", html: sub }) : null,
       chart,
       legendItems ? legend(legendItems) : null,
@@ -148,7 +145,7 @@
   // ---- Chart builders -------------------------------------------------------
 
   const plotStyle = () => ({ background: "transparent", color: css("--text-secondary"), fontSize: "12px", overflow: "visible" });
-  const chartHeight = (w, big) => (big ? (w < 480 ? 280 : 380) : (w < 480 ? 230 : 290));
+  const chartHeight = (w, big) => (big ? (w < 480 ? 315 : 380) : (w < 480 ? 260 : 290));
   const labelWidth = (labels) => Math.max(0, ...labels.map((t) => String(t).length)) * 6.6 + 12;
 
   // Line chart with optional comparison lines, target rule and direct labels
@@ -169,8 +166,8 @@
       marks.push(Plot.rect([a], { x1: (d) => new Date(d.start), x2: (d) => new Date(d.end), fill: css("--annotation") }));
     }
     if (trend) {
-      marks.push(Plot.areaY(series, { x: "date", y1: "flo", y2: "fhi", fill: css("--trend"), fillOpacity: 0.14 }));
-      marks.push(Plot.lineY(series, { x: "date", y: "fit", stroke: css("--trend"), strokeWidth: 1.5 }));
+      marks.push(Plot.areaY(series, { x: "date", y1: "flo", y2: "fhi", fill: css("--uncertainty") }));
+      marks.push(Plot.lineY(series, { x: "date", y: "fit", stroke: css("--trend"), strokeWidth: 1.25 }));
     }
     if (projection) {
       marks.push(Plot.areaY(projection, { x: "date", y1: "lo", y2: "hi", fill: s1, fillOpacity: 0.12 }));
@@ -185,7 +182,7 @@
       if (cl) endLabels.push({ date: cl.date, y: val(cl), text: c.label, fill: css("--text-secondary") });
     }
     marks.push(Plot.areaY(series, { x: "date", y1: lo, y2: hi, fill: s1, fillOpacity: 0.25 }));
-    marks.push(Plot.lineY(series, { x: "date", y: val, stroke: s1, strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }));
+    marks.push(Plot.lineY(series, { x: "date", y: val, stroke: s1, strokeWidth: 2.25, strokeLinejoin: "round", strokeLinecap: "round" }));
     marks.push(Plot.ruleY([0], { stroke: css("--axis") }));
     if (targetLine != null) {
       marks.push(Plot.ruleY([targetLine], { stroke: accent, strokeWidth: 1.5, strokeDasharray: "5,4" }));
@@ -199,9 +196,9 @@
     const yMax = isPct ? 1 : Math.max(...series.map((d) => (Number.isNaN(val(d)) ? 0 : hi(d) || 0)), ...(compare || []).flatMap((c) => c.series.map((d) => (Number.isNaN(val(d)) ? 0 : val(d)))), targetLine || 0);
     const minGap = (14 / Math.max(1, h - 50)) * yMax;
     endLabels.sort((a, b) => b.y - a.y).forEach((l, i, arr) => { l.ly = i === 0 ? l.y : Math.min(l.y, arr[i - 1].ly - minGap); });
-    const marginRight = endLabels.length ? Math.min(w * 0.32, labelWidth(endLabels.map((l) => l.text))) : 16;
+    const marginRight = endLabels.length ? Math.min(w * 0.38, labelWidth(endLabels.map((l) => l.text)) * (w < 480 ? 0.92 : 1)) : 16;
     for (const l of endLabels) {
-      marks.push(Plot.text([l], { x: "date", y: "ly", text: "text", dx: 8, textAnchor: "start", fill: l.fill, fontWeight: l.weight || 400, fontSize: 12 }));
+      marks.push(Plot.text([l], { x: "date", y: "ly", text: "text", dx: 6, textAnchor: "start", fill: l.fill, fontWeight: l.weight || 400, fontSize: w < 480 ? 11 : 12 }));
     }
     marks.push(Plot.ruleX(series, Plot.pointerX({ x: "date", stroke: css("--axis") })));
     const cmpAt = (d) => (compare || []).map((c) => {
@@ -215,7 +212,8 @@
     })));
     return Plot.plot({
       width: w, height: h, marginLeft: isPct ? 44 : 56, marginRight, style: plotStyle(),
-      x: { type: "utc", label: null, ticks: w < 480 ? 4 : 7 },
+      // Explicit year intervals so narrow screens do not crowd the axis.
+      x: { type: "utc", label: null, ticks: d3.utcYear.every(w < 480 ? 4 : 2) },
       y: { label: yLabel, grid: true, zero: true, domain: isPct ? [0, 1] : undefined, tickFormat: isPct ? (d) => `${Math.round(d * 100)}%` : "~s" },
       marks,
     });
@@ -364,9 +362,20 @@
   }
 
   const latestRow = (rows) => rows.filter((r) => r.nlo != null).pop();
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  // Change with an arrow and words, never colour: "↓ about 7,900 (11%) since June 2025".
+  function changeArrow(now, then, when, short) {
+    const a = (now.nlo + now.nhi) / 2, b = (then.nlo + then.nhi) / 2;
+    const chLo = now.nlo - then.nhi, chHi = now.nhi - then.nlo;
+    if (chLo <= 0 && chHi >= 0) return short ? "about the same" : `About the same as ${when}`;
+    const up = chLo > 0;
+    const size = up ? fmtChange(chLo, chHi) : fmtChange(-chHi, -chLo);
+    const pct = b >= 20 ? ` (${Math.round(Math.abs(a - b) / b * 100)}%)` : "";
+    return short ? `${up ? "↑" : "↓"} ${size}${b >= 500 ? `, ${(a / b).toFixed(1)}×` : ""}` : `${up ? "↑" : "↓"} ${size}${pct} ${up ? "more" : "fewer"} than ${when}`;
+  }
   // Only annotations that fall inside the data shown get a legend entry.
   const annIn = (ann, months) => ann.filter((a) => new Date(a.start) <= parseMonth(months[months.length - 1]) && new Date(a.end) >= parseMonth(months[0]));
-  const annLegend = (ann) => (ann.length ? [["band", css("--annotation"), ann.map((a) => a.label).join("; ")]] : []);
+  const annLegend = (ann) => (ann.length ? [["band", css("--annotation"), `Shaded: ${ann.map((a) => a.label.replace(/^COVID-19 /, "")).join("; ")} (COVID-19)`, "long"]] : []);
   const midP = (r) => (r.plo + r.phi) / 2;
 
   function rankOf(ex, area, spec) {
@@ -464,29 +473,29 @@
       const r19 = i19 >= 0 ? rows[i19] : null;
       const prev = yearEarlier(rows.filter((r) => r.nlo != null));
       const rank = area !== "New Zealand" ? rankOf(x, area, spec) : null;
-      const tiles = el("div", { class: "tiles tiles-4" },
-        el("div", { class: "tile" },
-          el("p", { class: "label" }, `Waited more than four months, ${monthLabel(now.date)}`),
-          el("a", { class: "value", href: `${OFFSET}methods.html#measures`, title: "What this number means" }, headline(now.nlo, now.nhi)),
-          el("p", { class: "delta" }, prev ? diffText(now, prev, "a year earlier") : ""),
-          now.nlo !== now.nhi ? el("p", { class: "delta" }, `Range ${fmtRange(now.nlo, now.nhi)} (small counts are suppressed)`) : null,
-          (() => {
-            const peak = rows.filter((r) => r.nlo != null).reduce((a, r) => (r.nlo + r.nhi > a.nlo + a.nhi ? r : a));
-            return el("p", { class: "delta" }, `Highest: ${headline(peak.nlo, peak.nhi)} (${monthShort(peak.date)})`);
-          })()),
-        el("div", { class: "tile" },
-          el("p", { class: "label" }, "Waiting less than four months"),
-          el("a", { class: "value", href: `${OFFSET}methods.html#health-targets`, title: "The health target measure" }, now.ulo == null ? "unknown" : fmtPctRange(now.ulo, now.uhi)),
-          el("p", { class: "delta" }, `of ${headline(now.tlo, now.thi)} waiting. Health target: 95% by 2030.`)),
-        el("div", { class: "tile" },
-          el("p", { class: "label" }, "Compared with January 2019"),
-          el("p", { class: "value value-sm" }, r19 && r19.nlo != null ? diffText(now, r19, "") .replace(/ than $/, "") : "not reported in 2019"),
-          el("p", { class: "delta" }, r19 && r19.nlo != null ? `${fmtRange(r19.nlo, r19.nhi)} waited more than four months in January 2019` : "")),
-        rank ? el("div", { class: "tile" },
-          el("p", { class: "label" }, `Rank among districts${spec === "All" ? "" : ` for ${spec}`}`),
-          el("p", { class: "value value-sm" }, `${ordinal(rank.rank)} of ${rank.of}`),
-          el("p", { class: "delta" }, el("a", { href: "#comparison" }, "1 = smallest share waiting over four months"))) : null);
+      // 1. The question, 2. the answer, 3. supporting figures.
+      // The selection, spelled out above the result so nobody has to read it
+      // back from the controls.
+      const listName = MEASURES.find((m) => m[0] === measure)[1];
+      const question = el("p", { class: "ex-question", "aria-live": "polite" },
+        ...[area, listName, spec === "All" ? "All specialties" : spec].flatMap((t, k) => (k ? [el("span", { class: "sep", "aria-hidden": "true" }, " · "), el("span", { class: "part" }, t)] : [el("span", { class: "part" }, t)])),
+        cmpArea0() ? el("span", { class: "ex-compare" }, ` compared with ${cmpArea0()}`) : null);
+      const answer = el("h2", { class: "ex-answer" },
+        el("a", { class: "num", href: `${OFFSET}methods.html#measures`, title: "What this number means" }, cap(headline(now.nlo, now.nhi))),
+        el("span", { class: "rest" }, ` people had waited more than four months in ${monthLabel(now.date)}`));
+      const delta = el("p", { class: "ex-delta" }, prev ? changeArrow(now, prev, `${monthLabel(prev.date)}`) : "",
+        now.nlo !== now.nhi ? ` · exact range ${fmtRange(now.nlo, now.nhi)}` : "");
+      const peak = rows.filter((r) => r.nlo != null).reduce((a, r) => (r.nlo + r.nhi > a.nlo + a.nhi ? r : a));
+      const stat = (label, val, sub) => el("div", {}, el("p", { class: "label" }, label), el("p", { class: "val" }, val), sub ? el("p", { class: "sub" }, sub) : null);
+      const stats = el("div", { class: "stats-secondary" },
+        stat("Waiting less than four months", now.ulo == null ? "unknown" : fmtPctRange(now.ulo, now.uhi),
+          el("span", {}, `of ${headline(now.tlo, now.thi)} waiting · `, el("a", { href: `${OFFSET}methods.html#health-targets` }, "target 95%"))),
+        stat("Since January 2019", r19 && r19.nlo != null ? changeArrow(now, r19, "", true) : "not reported",
+          r19 && r19.nlo != null ? `${fmtRange(r19.nlo, r19.nhi)} in January 2019` : null),
+        stat("Highest month", headline(peak.nlo, peak.nhi), monthLabel(peak.date)),
+        rank ? stat(`Rank among districts${spec === "All" ? "" : ` (${spec})`}`, `${ordinal(rank.rank)} of ${rank.of}`, "1 = smallest share waiting over four months") : null);
 
+      function cmpArea0() { return compareWith && compareWith !== area ? compareWith : ""; }
       const isNZAll = key === "New Zealand|All";
       const cmpArea = compareWith && compareWith !== area ? compareWith : "";
       const cmpRows = cmpArea ? explorerRows(x, `${cmpArea}|${spec}`) : [];
@@ -494,7 +503,8 @@
       const cmpLabel = `${cmpArea}${spec === "All" ? "" : `, ${spec}`}`;
       const trendRows = rows.map((r, j) => (isNZAll ? { ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] } : r));
       const countCard = card({
-        takeaway: `People in ${where} who had waited more than four months for ${MEASURE_NOUN[measure]}, by month.`,
+        takeaway: "",
+        sub: "Monthly trend",
         primary: true,
         draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People", label: area, big: true }),
         legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...annLegend(ann)],
@@ -503,7 +513,7 @@
       const pctRows = rows.map((r) => ({ ...r, nlo: null, nhi: null, plo: r.ulo, phi: r.uhi }));
       const hasCmp = cmpPct.some((r) => r.plo != null);
       const pctCard = card({
-        takeaway: `Share of everyone waiting in ${where} who had waited less than four months${hasCmp ? `, compared with ${cmpLabel}` : ""}.`,
+        takeaway: `Share waiting under four months${hasCmp ? `, compared with ${cmpLabel}` : ""}`,
         sub: cmpArea && !hasCmp ? `${cmpLabel} has no data for this list.` : null,
         draw: (w) => lineChart(w, { series: pctRows, isPct: true, annotations: ann, yLabel: "Waiting under 4 months", targetLine: 0.95, label: area,
           compare: hasCmp ? [{ series: cmpPct, label: cmpArea }] : [] }),
@@ -522,9 +532,9 @@
         el("p", {}, el("button", { type: "button", class: "btn-link", onclick: () => downloadCsv(`waitlist_${measure}_${area}_${spec}.csv`.replace(/[^\w.-]+/g, "_"), tableCols, shown) }, "Download this selection (CSV)")));
 
       const vintage = meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3");
-      const note = el("p", { class: "meta-line" }, `Source: Health NZ waitlist extract ${vintage}, ${monthLabel(parseMonth(x.months[0]))} to ${monthLabel(parseMonth(x.months[x.months.length - 1]))}. Historical figures may be revised by Health NZ; `,
+      const note = el("p", { class: "meta-line quiet" }, `Source: Health NZ waitlist extract ${vintage}, ${monthLabel(parseMonth(x.months[0]))} to ${monthLabel(parseMonth(x.months[x.months.length - 1]))}. Historical figures may be revised by Health NZ; `,
         el("a", { href: `${OFFSET}methods.html#revisions` }, "see revisions"), ".");
-      body.replaceChildren(tiles, note, countCard, pctCard, tableBlock, breakdown());
+      body.replaceChildren(question, answer, delta, countCard, note, stats, pctCard, tableBlock, breakdown());
 
       function breakdown() {
         const latest = x.months.length - 1;
@@ -543,7 +553,7 @@
             .map((it) => ({ label: it.label, ...it.r }));
           bars.sort((a, b) => (isShare ? (b.ulo + b.uhi) - (a.ulo + a.uhi) : (b.nlo + b.nhi) - (a.nlo + a.nhi)));
           wrap.replaceChildren(bars.length === 0 ? el("p", {}, "Nothing to show for this selection.") : card({
-            takeaway: `${title}, ${monthLabel(parseMonth(x.months[latest]))}: ${isShare ? "share waiting less than four months" : "people who had waited more than four months"}.`,
+            takeaway: `${monthLabel(parseMonth(x.months[latest]))}: ${isShare ? "share waiting under four months" : "waited more than four months"}`,
             draw: (w) => barChart(w, bars, {
               label: "label", lo: isShare ? "ulo" : "nlo", hi: isShare ? "uhi" : "nhi", isPct: isShare,
               target: isShare ? 0.95 : null, xmax: isShare ? 1 : null, highlight: area,

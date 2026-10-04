@@ -14,13 +14,10 @@ fmt_count_range <- function(lo, hi) {
   if (lo == hi) return(fmt_int(lo))
   mid <- (lo + hi) / 2
   if ((hi - lo) / max(mid, 1) <= 0.05 && mid >= 1000) {
-    # Round as coarsely as possible without leaving the possible range.
-    steps <- c(if (mid >= 10000) 100, 10, 1)
-    for (step in steps) {
-      rounded <- round(mid / step) * step
-      if (rounded >= lo && rounded <= hi) break
-    }
-    return(paste("about", fmt_int(rounded)))
+    # Headline rounding: nearest 100 from 10,000, nearest 10 below. "About"
+    # marks the figure as rounded; the exact range is in the data tables.
+    step <- if (mid >= 10000) 100 else 10
+    return(paste("about", fmt_int(round(mid / step) * step)))
   }
   paste(fmt_int(lo), "to", fmt_int(hi))
 }

@@ -206,6 +206,33 @@ Still open for you to decide:
   2 September for the extract), and unknown ethnicity being excluded from the
   breakdowns.
 
+### UI refinements (4 October 2026)
+
+- Explore is now its own page.
+- Navigation: Overview, Explore, Methods & data. The ESPI 1, 3 and 8 page is
+  linked from the methods page.
+- Two measures: prose about 780px wide, charts and the explorer up to 1080px.
+- Explorer order:
+  1. the selection spelled out ("Canterbury · First specialist assessment ·
+     All specialties");
+  2. one dominant figure and its change (arrow and words, no colour);
+  3. the main chart;
+  4. a quiet source line;
+  5. smaller secondary figures;
+  6. the supporting chart, table, download and breakdown.
+- Shorter repeat headings ("Monthly trend", "Share waiting under four
+  months"). I used "waiting under" rather than the suggested "seen within":
+  the measure counts people still waiting, not people seen.
+- Orange is now limited to finding numbers, the target line and event
+  shading.
+- Darker, warmer dark mode (colours as suggested; the comparison slate was
+  re-checked against the new teal).
+- Smaller headings and taller charts on phones, legends stacked, year ticks
+  every four years.
+- Headline figures round to the nearest 100 (from 10,000) or 10, as
+  suggested. The methods page says a rounded figure can fall just outside
+  the exact range, which stays in the tables.
+
 ## 8. What is left for version 1
 
 1. Run `fetch_espi_app()` by hand, fix the selector or reader, and commit the

@@ -22,8 +22,9 @@ will wait.
 
 | Page | What it does |
 |---|---|
-| Waiting lists (home) | Three automatically written findings; an explorer of first specialist assessment and planned treatment waitlists by district and specialty since July 2015, with comparison against New Zealand or another district; and a district comparison |
-| More indicators | ESPI 1, 3 and 8 (referral processing, treatment threshold, prioritisation tools), 2019 to 2025, from the OIA release |
+| Overview (home) | Three automatically written findings and a district comparison |
+| Explore | First specialist assessment and planned treatment waitlists by district and specialty since July 2015, with comparison against New Zealand or another district |
+| Referral and prioritisation indicators | ESPI 1, 3 and 8 (2019 to 2025, from the OIA release); linked from the methods page rather than the top navigation |
 | Methods and data | Definitions, caveats, revisions between extracts, data checks, downloads, change log |
 
 ## How it works
