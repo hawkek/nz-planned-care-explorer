@@ -259,3 +259,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 }
 .skip-link:focus { top: 8px; }
 .navbar .nav-link:focus-visible, .navbar .navbar-brand:focus-visible { outline: 2px solid var(--text-primary) !important; outline-offset: 2px; box-shadow: none !important; }
+
+/* Quarto's theme gives every <table> the light page colour, which leaves
+   light text on a light table in dark mode. Tables take their surroundings. */
+#quarto-document-content table { background-color: transparent; color: inherit; }

@@ -23,14 +23,14 @@ Status as of 4 October 2026. Decisions are recorded in
 
 ## Your actions before the soft launch (October)
 
-- [ ] Check the pull request's workflow run passes on GitHub; download the
-      `site-preview` artifact and look through it
-- [ ] Enable GitHub Pages: Settings → Pages → Source: GitHub Actions
+- [x] Check the pull request's workflow run passes on GitHub (#2, 4 October)
+- [x] Enable GitHub Pages: Settings → Pages → Source: GitHub Actions
 - [x] Create a GoatCounter account and put the site code in
       `site/_quarto.yml` (`goatcounter`: nz-planned-care-explorer)
 - [ ] Create a project email address and put it in `site/_quarto.yml`
       (`contact-email`)
-- [ ] Merge the pull request and check the deployed site
+- [x] Merge the pull request; site live at
+      https://hawkek.github.io/nz-planned-care-explorer/ (4 October)
 - [ ] Send `docs/health_nz_email.md` to data-enquiries@health.govt.nz
 - [ ] Lighthouse catalogue search for existing waiting list products
 - [ ] Read-through of findings and methods by you, a statistician and a
