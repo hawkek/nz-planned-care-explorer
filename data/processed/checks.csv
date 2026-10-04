@@ -11,3 +11,4 @@ No missing months in each indicator's national series,error,TRUE,0,
 Numerator is not larger than denominator,warning,FALSE,13,"Equivalent to percentages above 100, as all percentages are computed from the counts. Present in the provisional OIA history for ESPI 2. These rows are kept in counts but excluded from proportions."
 "ESPI 1 counts services, so each row is 0 or 1 of 0 or 1",error,TRUE,0,
 "District totals equal the sum of specialties, allowing for suppression",warning,TRUE,0,Not applicable: no district total rows in the current sources.
+No months from after the July 2026 change of data system,warning,TRUE,0,"From July 2026 Health NZ reports from NBRD instead of NBRS, with different rules for ESPI 2 and 5. Figures either side of the change may not be comparable; see the methods page."

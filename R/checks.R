@@ -82,7 +82,16 @@ run_checks <- function(long, reference) {
       key_view(dplyr::filter(long, indicator == "ESPI1" &
                                (!num_lo %in% c(0, 1) | !den_lo %in% c(0, 1))))
     ),
-    check_district_totals(long)
+    check_district_totals(long),
+    check_result(
+      "No months from after the July 2026 change of data system", "warning",
+      long |>
+        dplyr::filter(month >= as.Date("2026-07-01")) |>
+        dplyr::count(indicator, month),
+      paste("From July 2026 Health NZ reports from NBRD instead of NBRS, with",
+            "different rules for ESPI 2 and 5. Figures either side of the",
+            "change may not be comparable; see the methods page.")
+    )
   )
 }
 

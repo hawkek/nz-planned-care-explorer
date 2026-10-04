@@ -155,7 +155,8 @@
     const lo = (d) => (isPct ? d.plo : d.nlo);
     const hi = (d) => (isPct ? d.phi : d.nhi);
     const marks = [];
-    for (const a of annotations || []) {
+    const t0 = series[0].date, t1 = series[series.length - 1].date;
+    for (const a of (annotations || []).filter((a) => new Date(a.end) >= t0 && new Date(a.start) <= t1)) {
       marks.push(Plot.rect([a], { x1: (d) => new Date(d.start), x2: (d) => new Date(d.end), fill: css("--annotation") }));
     }
     if (trend) {
@@ -268,7 +269,8 @@
     const items = [["", css("--series-1"), isPct ? "Monthly percentage" : "Monthly count"]];
     if (!isPct && series.some((d) => d.nlo !== d.nhi)) items.push(["band", css("--wash"), "Range from suppressed small counts"]);
     if (hasTrend) items.push(["", css("--text-muted"), "Smoothed trend with 95% interval"]);
-    if ((opts.annotations || []).length) items.push(["band", css("--annotation"), opts.annotations.map((a) => `${a.label} (${monthShort(new Date(a.start))})`).join("; ")]);
+    const inRange = (opts.annotations || []).filter((a) => new Date(a.start) <= series[series.length - 1].date);
+    if (inRange.length) items.push(["band", css("--annotation"), inRange.map((a) => `${a.label} (${monthShort(new Date(a.start))})`).join("; ")]);
     return card({
       takeaway: block.takeaway,
       sub: `<a href="${defLink(code)}">${DISPLAY[code]}: ${ind.name}</a>`,

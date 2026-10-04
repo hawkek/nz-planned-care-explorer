@@ -24,6 +24,22 @@ aggregate_counts <- function(long, by) {
 
 safe_div <- function(a, b) ifelse(b > 0, a / b, NA_real_)
 
+# ---- Change of source system -------------------------------------------------
+
+# Health NZ replaced NBRS with NBRD from 1 July 2026, with different rules for
+# ESPI 2 and 5 (see docs/nbrd_transition.md). Trends and projections are
+# fitted within one system only, never across the change.
+NBRD_START <- as.Date("2026-07-01")
+
+source_system <- function(month) ifelse(month >= NBRD_START, "NBRD", "NBRS")
+
+# Fit a smooth trend separately before and after the change of system.
+smooth_trend_by_system <- function(month, y) {
+  sys <- source_system(month)
+  out <- lapply(split(seq_along(month), sys), function(i) smooth_trend(month[i], y[i]))
+  dplyr::arrange(dplyr::bind_rows(out), month)
+}
+
 # ---- Smoothed trend ---------------------------------------------------------
 
 # Negative binomial GAM with a smooth in time. Returns the fitted mean and a

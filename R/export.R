@@ -43,7 +43,7 @@ build_national <- function(long, indicators) {
     ind <- ind_row(indicators, code)
     s <- dplyr::filter(nat, indicator == code) |> dplyr::arrange(month)
     y <- if (code %in% PCT_INDICATORS) NULL else s$n_mid
-    tr <- if (is.null(y)) NULL else smooth_trend(s$month, y)
+    tr <- if (is.null(y)) NULL else smooth_trend_by_system(s$month, y)
     if (!is.null(tr)) s <- dplyr::bind_cols(s, dplyr::select(tr, fit, lo, hi))
     out[[code]] <- list(
       series = series_rows(s, with_trend = !is.null(tr)),
@@ -179,7 +179,12 @@ build_targets <- function(national_table, district_table, indicators) {
   out <- list()
   one <- function(s, area, ind) {
     s <- dplyr::arrange(s, month)
-    p <- project_to_target(s$month, s$n_mid)
+    # Only the current source system is used, so a fit never spans July 2026.
+    current <- source_system(s$month) == source_system(max(s$month))
+    p <- project_to_target(s$month[current], s$n_mid[current])
+    if (!all(current) && p$status == "not shown") {
+      p$reason <- "the data source changed in July 2026 and there are not yet 24 months under the new system"
+    }
     hist <- utils::tail(s, 36)
     list(
       status = p$status,

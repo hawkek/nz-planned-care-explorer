@@ -49,3 +49,13 @@ test_that("a clearly falling series gets a projection; a flat one does not", {
   small <- project_to_target(m, rep(3, 24))
   expect_equal(small$status, "not shown")
 })
+
+test_that("trends are never fitted across the July 2026 change of data system", {
+  m <- seq(as.Date("2023-07-01"), by = "month", length.out = 40)
+  y <- c(rep(1000, 36), rep(1500, 4))
+  tr <- smooth_trend_by_system(m, y)
+  expect_equal(nrow(tr), 40)
+  expect_true(all(is.na(tr$fit[m >= NBRD_START])))   # too few NBRD months
+  expect_true(all(!is.na(tr$fit[m < NBRD_START])))
+  expect_lt(max(tr$fit, na.rm = TRUE), 1100)          # the step does not leak back
+})

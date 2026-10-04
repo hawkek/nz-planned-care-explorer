@@ -47,3 +47,11 @@ test_that("district totals are checked against specialties when present", {
   row <- res[grepl("District totals", res$check), ]
   expect_false(row$passed)
 })
+
+test_that("months after the July 2026 data system change raise a warning", {
+  d <- make_long(months = as.Date(c("2026-06-01", "2026-07-01")))
+  res <- run_checks(d, ref)
+  row <- res[grepl("July 2026", res$check), ]
+  expect_false(row$passed)
+  expect_equal(row$severity, "warning")
+})

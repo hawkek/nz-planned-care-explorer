@@ -77,9 +77,11 @@ cost without benefit. All of these are easy to reverse.
   for blame words.
 - **Suppression.** Ranges are shown everywhere. Headline figures are rounded
   with "about" only when the range is within 2% of the total.
-- **Provider or residence district.** The plan flags this; it is still
-  unresolved, and it matters most for regional services (cardiothoracic,
-  neurosurgery, paediatric specialties). The methods page says so.
+- **Provider or residence district: resolved.** Both data dictionaries
+  attribute patients to the district managing the waitlist entry, which is the
+  provider (see `docs/nbrd_transition.md`). Rates per resident population would
+  therefore be misleading for regional services. They stay off, and the
+  district comparison uses the share of each district's own list.
 - **Annotations.** COVID-19 Alert Level 4 periods are annotated from memory of
   the public record and marked `verified = no` in `config/annotations.csv`.
   Industrial action was left out rather than guessed. Verify both before
@@ -93,13 +95,28 @@ cost without benefit. All of these are easy to reverse.
 - **The ESPI 2 and 5 denominators** are inferred, not stated. Ask about them in
   the soft-launch check with Health NZ.
 
-## 5. What is left for version 1
+## 5. The July 2026 change of data system
+
+Health NZ replaced NBRS with NBRD from 1 July 2026. Its draft dictionary shows
+different rules for ESPI 2 and 5, and no standard statistics for ESPI 1, 3 or
+8. A step in the series at July 2026 should therefore be expected until shown
+otherwise. The analysis, its consequences and the questions for Health NZ are
+in `docs/nbrd_transition.md`. The pipeline now fits trends and projections
+within one system only, flags months from July 2026 onward, and marks the
+change on charts.
+
+## 6. What is left for version 1
 
 1. Run `fetch_espi_app()` by hand, fix the selector or reader, and commit the
-   first export. Then check `reconciliation.csv` for overlapping months.
-2. Add the population file and confirm the source Health NZ uses.
-3. Confirm the licence and the ESPI 2, 3 and 5 denominators with Health NZ.
-4. Verify the annotation dates and add industrial action.
-5. Enable GitHub Pages (Settings → Pages → Source: GitHub Actions) and merge to
+   first export. Then check `reconciliation.csv` for October to December 2025.
+   That overlap is the only public measure of the NBRS to NBRD break.
+2. Send the questions in `docs/nbrd_transition.md` to Health NZ.
+3. Population rates: not needed for version 1 (patients are counted by
+   provider district).
+4. Confirm the licence and the ESPI 3 and 5 denominators with Health NZ. For
+   ESPI 2, NBRD defines the denominator as the total waiting for a first
+   assessment, which matches the inference for NBRD-era data.
+5. Verify the annotation dates and add industrial action.
+6. Enable GitHub Pages (Settings → Pages → Source: GitHub Actions) and merge to
    `main`.
-6. Statistician and lay reviews (week 5), accessibility check (week 6).
+7. Statistician and lay reviews (week 5), accessibility check (week 6).
