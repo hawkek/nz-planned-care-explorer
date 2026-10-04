@@ -5,22 +5,15 @@ name: Build and publish
 # - push to main: test, rebuild from the data in the repo, publish.
 #   To update the site each quarter, add the new Health NZ waitlist extract to
 #   data/raw/health_targets_extract/<YYYY-YY-Qn>/ and push.
-# - manual run with "fetch" ticked: also try the (untested) ESPI web tool
-#   download and commit what it saves.
-# If a data check fails, nothing is published and the last good site stays
-# live. If the fetch fails, the run is marked failed (GitHub emails the repo
-# owner) and nothing is published.
+# - manual run: same as a push to main.
+# If a data check fails, the run fails (GitHub emails the repo owner), nothing
+# is published, and the last good site stays live.
 
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
-    inputs:
-      fetch:
-        description: "Fetch from the ESPI web tool"
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -32,10 +25,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # only used by the optional fetch to commit new data
-    env:
-      FETCH: ${{ github.event_name == 'workflow_dispatch' && inputs.fetch }}
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +34,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::chromote, any::testthat
+          extra-packages: any::testthat
 
       - uses: quarto-dev/quarto-actions/setup@v2
         with:
@@ -54,37 +43,11 @@ jobs:
       - name: Unit tests
         run: Rscript tests/testthat.R
 
-      - name: Fetch from the ESPI web tool
-        id: fetch
-        if: env.FETCH == 'true'
-        continue-on-error: true
-        run: |
-          Rscript -e 'for (f in list.files("R", full.names = TRUE)) source(f); print(fetch_espi_app())'
-
       - name: Run pipeline (stops here if a data check fails)
         run: Rscript run_pipeline.R
 
-      - name: Commit new data
-        if: env.FETCH == 'true' && steps.fetch.outcome == 'success'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data
-          if git diff --cached --quiet; then
-            echo "No data changes"
-          else
-            git commit -m "Data update $(date -u +%Y-%m-%d)"
-            git push
-          fi
-
       - name: Render site
         run: quarto render site
-
-      - name: Stop if the fetch failed
-        if: steps.fetch.outcome == 'failure'
-        run: |
-          echo "::error::Fetching from the ESPI web tool failed. The site was not updated. See R/fetch.R and data/raw/espi_app/README.md for the manual fallback."
-          exit 1
 
       - name: Attach the rendered site for review
         if: github.event_name == 'pull_request'

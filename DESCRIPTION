@@ -17,5 +17,4 @@ Imports:
     readxl,
     tibble
 Suggests:
-    chromote,
     testthat (>= 3.0.0)

@@ -1,6 +1,7 @@
 # Launch checklist
 
-Status as of 4 October 2026. Tick items off in the pull request or here.
+Status as of 4 October 2026. Decisions are recorded in
+`docs/plan_review.md`, section 8.
 
 ## Done
 
@@ -8,52 +9,48 @@ Status as of 4 October 2026. Tick items off in the pull request or here.
       OIA history, suppression as ranges, revisions log
 - [x] 27 automatic data checks, including Health NZ's published June 2026
       health target results (national mismatch stops publishing)
-- [x] 90 unit tests
+- [x] 93 unit tests
 - [x] Overview, Explore, Methods & data, and referral and prioritisation pages
 - [x] Design system (palette checked for colour-vision separation, self-hosted
       fonts, light and dark)
 - [x] Keyboard navigation: skip link, visible focus, all controls reachable;
       every chart has a text description and a data table
+- [x] Likely reporting errors circled on charts, values unchanged
 - [x] Chart annotation dates checked against sources
       (`config/annotations_sources.md`)
-- [x] Workflow runs tests and builds the site on pull requests (no deploy)
+- [x] Workflow tests and builds pull requests without publishing
+- [x] All ten launch decisions made (see `docs/plan_review.md`)
 
-## Decisions
+## Your actions before the soft launch (October)
 
-Recorded in `docs/plan_review.md` as they are made.
-
-- [ ] Data licence: confirm with Health NZ, or publish on the stated CC BY 4.0
-      basis
-- [ ] OIA response letter (requester's name) in the repository
-- [ ] Repository name and web address
-- [ ] Version 1 scope: district comparison, referral and prioritisation page
-- [ ] Untested ESPI web tool download code
-- [ ] Marking flagged data (for example Hawke's Bay, January 2025) on charts
-- [ ] Visitor analytics
-- [ ] Corrections and contact channel
-- [ ] Launch date (election on 7 November 2026)
-- [ ] Processed CSVs in git
-- [ ] Ethnicity view for treatment waiting lists
-
-## Before publishing
-
-- [ ] First workflow run passes on GitHub (pull request check)
+- [ ] Check the pull request's workflow run passes on GitHub; download the
+      `site-preview` artifact and look through it
 - [ ] Enable GitHub Pages: Settings → Pages → Source: GitHub Actions
-- [ ] Merge and check the deployed site
-- [ ] Email Health NZ (data-enquiries@health.govt.nz): licence; questions in
-      `docs/nbrd_transition.md`; Hawke's Bay January 2025; exits without
-      being seen
+- [x] Create a GoatCounter account and put the site code in
+      `site/_quarto.yml` (`goatcounter`: nz-planned-care-explorer)
+- [ ] Create a project email address and put it in `site/_quarto.yml`
+      (`contact-email`)
+- [ ] Merge the pull request and check the deployed site
+- [ ] Send `docs/health_nz_email.md` to data-enquiries@health.govt.nz
 - [ ] Lighthouse catalogue search for existing waiting list products
 - [ ] Read-through of findings and methods by you, a statistician and a
       non-specialist
 - [ ] Screen reader (VoiceOver or NVDA), 200% zoom, Safari and iOS check
-- [ ] User test with 3 or 4 people next to Health NZ's dashboard (stop/go)
-- [ ] Soft launch to Health NZ's data team (definitions check)
+- [ ] User test with 3 or 4 people (journalist, clinician or planner, data
+      person, member of the public) next to Health NZ's dashboard: stop/go
+- [ ] Soft launch: share with testers and Health NZ's data team
 
-## Launch
+## Public launch (second half of November, after the 7 November election)
 
-- [ ] Post with the three findings; health reporters; eHealthNews; NZ R and
-      data visualisation groups
+- [ ] Re-check findings and figures against the latest Health NZ factsheet
+- [ ] Post with the three findings; health reporters (RNZ, Stuff, The Post,
+      NZ Herald); eHealthNews; NZ R and data visualisation groups
+- [ ] Track page views (GoatCounter), stars, mentions and contacts
+
+## After launch
+
+- [ ] Decide on a treatment ethnicity view, informed by user testing
+- [ ] Custom domain, if media use warrants it
 
 ## Every quarter
 
@@ -63,7 +60,8 @@ Recorded in `docs/plan_review.md` as they are made.
    to `config/reference/health_target_fsa.csv` and
    `config/reference/health_target_treatment.csv`, with the new vintage.
 3. Push to a branch and open a pull request; check the workflow passes.
-4. Read the warnings in `data/processed/checks.csv` and the revisions table.
+4. Read the warnings in the checks table and the revisions table (methods page
+   of the `site-preview` artifact).
 5. Re-read the three generated findings for accuracy and neutral wording.
 6. Add a change log entry on the methods page, then merge.
 

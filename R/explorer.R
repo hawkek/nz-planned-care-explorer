@@ -58,6 +58,11 @@ build_explorer <- function(lv, measure) {
   })
   nat <- dplyr::filter(s, area == "New Zealand", spec == "All") |> dplyr::arrange(month)
   tr <- smooth_trend_by_system(nat$month, (nat$o_lo + nat$o_hi) / 2)
+  # Cells flagged as one-month spikes or dips (see find_extract_spikes()).
+  # Values stay as released; the front end marks affected months.
+  fl <- find_extract_spikes(d)
+  flags <- data.frame(d = fl$district, s = fl$specialty, i = match(fl$month, months) - 1L,
+                      dev = round(fl$value - fl$local_median))
   list(
     measure = measure,
     label = unname(MEASURE_LABEL[measure]),
@@ -65,7 +70,8 @@ build_explorer <- function(lv, measure) {
     areas = c("New Zealand", sort(unique(d$district))),
     specialties = sort(unique(d$specialty)),
     series = series,
-    trend = list(fit = round(tr$fit, 1), lo = round(tr$lo, 1), hi = round(tr$hi, 1))
+    trend = list(fit = round(tr$fit, 1), lo = round(tr$lo, 1), hi = round(tr$hi, 1)),
+    flags = flags
   )
 }
 

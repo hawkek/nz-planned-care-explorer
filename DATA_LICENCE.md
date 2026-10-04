@@ -3,8 +3,8 @@
 The ESPI data in `data/raw/` and everything derived from it in `data/processed/`
 and on the website comes from **Health New Zealand | Te Whatu Ora**:
 
-- OIA response HNZ00201361 (25 March 2026), appendices One to Five, released to
-  an FYI.org.nz requester.
+- OIA response HNZ00201361 (25 March 2026), appendices One to Five, released in
+  response to a public request on FYI.org.nz (https://fyi.org.nz/request/33927-historical-espi-data-export-2019-present).
 - The ESPI web tool, tewhatuora.shinyapps.io/ESPI_app.
 
 Health NZ licenses content on its website for re-use under the
@@ -13,9 +13,13 @@ with exceptions for photographs, illustrations and logos, and for material
 identified as another party's copyright ([Health NZ copyright page](https://www.healthnz.govt.nz/copyright),
 checked 4 October 2026 via search results).
 
-**Still to confirm:** that the same licence applies to the ESPI web tool data and
-to the OIA release. Until Health NZ confirms this, treat the CC BY 4.0 position
-as an assumption.
+**Position while confirmation is sought (decided 4 October 2026):** the data
+and the tidy tables derived from it are republished on the basis of Health NZ's
+stated CC BY 4.0 terms, with attribution on every page, in a non-commercial
+project. Health NZ has been asked to confirm that these terms cover the
+waitlist extracts and the OIA release (one Health NZ data dictionary also
+carries non-commercial, no-changes wording); see `docs/health_nz_email.md`.
+If Health NZ asks, the downloads will be removed.
 
 Attribution to use: "Source: Health New Zealand | Te Whatu Ora, elective services
 patient flow indicators (provisional). Compiled by NZ Planned Care Explorer, an

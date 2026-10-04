@@ -113,6 +113,7 @@ p.subtitle, .subtitle { color: var(--text-secondary); font-size: 1.125rem; line-
 .legend .key.band { height: 10px; border: 0; border-radius: 2px; }
 .legend .key.dash { border-top-style: dashed; }
 .legend .key.dot { width: 10px; height: 10px; border: 0; border-radius: 50%; }
+.legend .key.ring { width: 11px; height: 11px; border: 1.75px solid; border-radius: 50%; background: transparent; }
 
 /* Technical layer: source, vintage, suppression. Visible, but secondary. */
 .meta-line {
