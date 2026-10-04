@@ -86,5 +86,5 @@ ESPI_DEFINITION, PERCENTAGE`. One reader handles all of them.
 | ESPI 5, share of those with a commitment | 10.2% | 44.1% (Feb 2023) | | 35.3% |
 
 Suppression adds a range of a few hundred to the national totals (for example,
-75,076 to 75,322 for ESPI 2 in December 2025), which is under 0.5% of the
+75,039 to 75,285 for ESPI 2 in December 2025), which is under 0.5% of the
 total. The ranges matter more at district and specialty level.
