@@ -65,6 +65,13 @@ test_that("a one-month doubling is flagged as a spike", {
   expect_equal(s$month, m[4])
 })
 
+test_that("a drop in the last month is not flagged as a spike", {
+  m <- seq(as.Date("2024-09-01"), by = "month", length.out = 7)
+  d <- make_long(months = m, districts = "Auckland", num = 600, den = 2000)
+  d$num_lo[7] <- d$num_hi[7] <- 100
+  expect_equal(nrow(find_spikes(d)), 0)
+})
+
 test_that("published health target results are compared with 100% minus the ESPI 2 share", {
   d <- make_long(months = as.Date("2025-06-01"), num = 380, den = 1000)
   good <- tibble::tibble(month = as.Date("2025-06-01"), area = "New Zealand",

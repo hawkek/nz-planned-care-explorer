@@ -74,8 +74,8 @@ run_checks <- function(long, reference,
       "Numerator is not larger than denominator", "warning",
       key_view(dplyr::filter(long, num_lo > den_hi)),
       paste("Equivalent to percentages above 100, as all percentages are",
-            "computed from the counts. Present in the provisional OIA history",
-            "for ESPI 2. These rows are kept in counts but excluded from",
+            "computed from the counts. Present in the provisional OIA history,",
+            "mostly for ESPI 2. These rows are kept in counts but excluded from",
             "proportions.")
     ),
     check_result(
@@ -88,7 +88,8 @@ run_checks <- function(long, reference,
       "No one-month spikes or dips in a district and specialty series", "warning",
       find_spikes(long),
       paste("A value more than 300 patients and 40% away from the median of",
-            "the surrounding five months. Usually a reporting error (for",
+            "the surrounding five months; the first and last month of each",
+            "series are not tested. Usually a reporting error (for",
             "example a duplicated load). Values are published unchanged and",
             "listed here.")
     ),
@@ -171,6 +172,8 @@ find_spikes <- function(long, min_abs = 300, min_rel = 0.4) {
 
 # Shared rule: a month more than `min_abs` and `min_rel` away from the median
 # of the five months centred on it, within each series defined by `keys`.
+# The first and last month of a series are never flagged: without a month on
+# each side, a genuine change at the end of the series looks like a dip.
 spikes_in <- function(d, keys, min_abs = 300, min_rel = 0.4) {
   d |>
     dplyr::arrange(dplyr::across(dplyr::all_of(c(keys, "month")))) |>
@@ -188,7 +191,7 @@ centred_median <- function(x, width) {
   n <- length(x)
   vapply(seq_len(n), function(i) {
     w <- x[max(1, i - half):min(n, i + half)]
-    if (length(w) < 3) NA_real_ else stats::median(w)
+    if (i == 1 || i == n || length(w) < 3) NA_real_ else stats::median(w)
   }, numeric(1))
 }
 

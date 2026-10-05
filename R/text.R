@@ -52,7 +52,8 @@ fmt_change <- function(a, b) {
   mid <- (a + b) / 2
   if (a == b) return(fmt_int(a))
   if ((b - a) / max(mid, 1) <= 0.05 && mid >= 100) {
-    return(paste("about", fmt_int(round(mid / 10) * 10)))
+    step <- if (abs(mid) >= 10000) 100 else 10
+    return(paste("about", fmt_int(round(mid / step) * step)))
   }
   paste(fmt_int(a), "to", fmt_int(b))
 }
@@ -103,10 +104,12 @@ takeaway_pct <- function(series, ind, area = "New Zealand") {
   # percentage covers, so say so.
   before <- utils::tail(s, 2)
   if (nrow(before) == 2 && before$d_lo[2] < 0.95 * before$d_lo[1]) {
-    unit <- if (ind$indicator == "ESPI1") "services" else "patients"
+    # ESPI 1 counts reporting services; ESPI 8 counts patients treated, so a
+    # drop there is usually fewer treatments (for example in December).
+    lead <- if (ind$indicator == "ESPI1") "Fewer services reported" else "Fewer patients were treated"
     out <- paste(out, sprintf(
-      "Fewer %s reported than in the month before (%s, compared with %s).",
-      unit, fmt_int(before$d_lo[2]), fmt_int(before$d_lo[1])
+      "%s than in the month before (%s, compared with %s).",
+      lead, fmt_int(before$d_lo[2]), fmt_int(before$d_lo[1])
     ))
   }
   out

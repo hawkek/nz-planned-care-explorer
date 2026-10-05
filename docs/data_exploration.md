@@ -42,14 +42,14 @@ ESPI_DEFINITION, PERCENTAGE`. One reader handles all of them.
 2. **Some district-months have no ESPI 1 services at all.** There are 12 such
    cases, including **Auckland in December 2025** and Hawke's Bay in September
    and October 2025. The national ESPI 1 figure for December 2025 (86%)
-   therefore covers 395 services rather than the usual 427 to 432. The site's
+   therefore covers 395 services rather than the usual 424 to 427 in 2025. The site's
    takeaway sentence says so automatically whenever the reporting base drops by
    more than 5%.
 
-3. **ESPI 2 has 13 rows where the numerator is larger than the denominator**
+3. **13 rows (12 for ESPI 2, 1 for ESPI 3) have a numerator larger than the denominator**
    (for example, Hawke's Bay Gynaecology in January 2025: 1,247 waiting over
-   four months, of 1,043 on the list). Five of these rows have a denominator of
-   0. They are kept in the counts but excluded from the share-of-list figures,
+   four months, of 1,043 on the list). Seven of these rows have a denominator
+   of 0. They are kept in the counts but excluded from the share-of-list figures,
    and are listed by the "Numerator is not larger than denominator" check. They
    are worth raising with Health NZ.
 
@@ -80,7 +80,7 @@ ESPI_DEFINITION, PERCENTAGE`. One reader handles all of them.
 
 | | Jan 2019 | Peak | Dec 2024 | Dec 2025 |
 |---|---:|---:|---:|---:|
-| ESPI 2, patients waiting more than 4 months for a first specialist assessment | 10,250 | 85,960 (Jan 2025; about 3,400 of this looks like a Hawke's Bay double count, see below) | 77,770 | 75,160 |
+| ESPI 2, patients waiting more than 4 months for a first specialist assessment | 10,250 | 85,960 (Jan 2025; about 3,200 of this looks like a Hawke's Bay double count, see below) | 77,770 | 75,160 |
 | ESPI 2, share of the waiting list | 8.6% | 41.8% (Mar 2025) | | 37.8% |
 | ESPI 5, patients waiting more than 4 months after a commitment to treatment | 4,400 | 35,900 (Jan 2025) | 33,050 | 27,740 |
 | ESPI 5, share of those with a commitment | 10.2% | 44.1% (Feb 2023) | | 35.3% |
@@ -141,9 +141,11 @@ secondary. Even so, they are useful for checking revisions.
   release for 2023 to 2025, by up to 2,400 (7%) in January 2024. This is
   consistent with later revisions to provisional data, but the article cannot
   show which version is right.
-- **January 2025 ESPI 2 is about 8,000 higher in the OIA release.** About 3,400
-  of that is a **Hawke's Bay anomaly**: almost every Hawke's Bay specialty
-  roughly doubled in January 2025 and returned to normal in February. For
+- **January 2025 ESPI 2 is about 8,000 higher in the OIA release.** About 3,200
+  of that (against the average of December and February) is a **Hawke's Bay
+  anomaly**: in almost every Hawke's Bay specialty, the number waiting more
+  than four months roughly doubled in January 2025 and returned to normal in
+  February. Total waiting rose much less (7,188, 8,457, 7,214). For
   example, Gynaecology went 616, 1,247, 619; Ophthalmology 569, 1,142, 596;
   Urology 243, 501, 240. That pattern looks like a duplicated data load. For
   February 2025, the article's specialty figures are also lower than the OIA's,
@@ -156,10 +158,11 @@ secondary. Even so, they are useful for checking revisions.
 
 1. The **January 2025 "peak" of about 86,000 is partly an artefact.** Without
    the Hawke's Bay doubling, January 2025 would be about 82,800, and the
-   highest month would be February 2025 (about 83,000). `docs/findings.md` has
+   highest month would be March 2025 (about 83,800). `docs/findings.md` has
    been corrected.
 2. A new warning-level check flags one-month spikes and dips (more than 300
-   patients and 40% away from the surrounding five-month median). It finds 6
+   patients and 40% away from the surrounding five-month median; the first
+   and last month of each series are not tested). It finds 6
    cells: the 4 Hawke's Bay cells above, Canterbury General Surgery in February
    2019 (11, against about 406), and Southern Orthopaedics in February 2020
    (117, against about 466). They are published unchanged and listed in
@@ -182,14 +185,17 @@ Suppressed cells are taken at their midpoint.
 
 | Month | FSA, extract | ESPI 2, OIA | Elective, extract | ESPI 5, OIA |
 |---|---:|---:|---:|---:|
-| Jan 2019 | 10,201 | 10,250 | 4,358 | 4,404 |
-| Jan 2022 | 35,780 | 35,816 | 21,638 | 21,673 |
-| Jan 2024 | 74,451 | 74,466 | 30,001 | 30,072 |
-| Jan 2025 | 85,945 | 85,960 | 35,728 | 35,902 |
-| Feb 2025 | 86,126 | 83,042 | 34,982 | 35,172 |
-| Jun 2025 | 74,538 | 73,154 | 26,645 | 26,919 |
-| Dec 2025 | 74,878 | 75,162 | 27,082 | 27,742 |
-| Jun 2026 | 66,638 | (not in OIA) | 20,283 | (not in OIA) |
+| Jan 2019 | 10,216 | 10,250 | 4,637 | 4,404 |
+| Jan 2022 | 35,791 | 35,817 | 21,847 | 21,673 |
+| Jan 2024 | 74,459 | 74,467 | 30,169 | 30,072 |
+| Jan 2025 | 85,956 | 85,960 | 35,895 | 35,902 |
+| Feb 2025 | 86,133 | 83,042 | 35,155 | 35,172 |
+| Jun 2025 | 74,556 | 73,155 | 26,848 | 26,919 |
+| Dec 2025 | 74,894 | 75,162 | 27,276 | 27,742 |
+| Jun 2026 | 66,656 | (not in OIA) | 20,483 | (not in OIA) |
+
+(Recomputed 4 October 2026 after fixing how suppressed cells are summed; the
+elective column moved by up to about 280.)
 
 - **FSA matches ESPI 2** almost exactly for most months, as you would expect
   from the same NBRS source. In December 2025, 406 of 418 district and
@@ -203,8 +209,8 @@ Suppressed cells are taken at their midpoint.
   results for June 2026 match the dashboard to 0.1 percentage points, and so
   does the national 66.1%. That also confirms the values transcribed in
   `config/reference/health_target_fsa.csv`.
-- **Elective treatment is close to ESPI 5** (within about 1% to 3%), but not
-  identical. The specialty names and groupings differ (25 against 19).
+- **Elective treatment is close to ESPI 5** (usually within 2%, up to about
+  5% in 2019), but not identical. The specialty names and groupings differ (25 against 19).
 
 ### What the extract means for the project
 

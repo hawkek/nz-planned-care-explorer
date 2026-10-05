@@ -111,8 +111,9 @@ latest_vintage <- function(tidy) {
 }
 
 # Cell-level changes in "waiting more than four months" between consecutive
-# vintages, for months present in both.
+# vintages, for months present in both (from EXTRACT_START, as published).
 extract_revisions <- function(tidy) {
+  tidy <- dplyr::filter(tidy, month >= EXTRACT_START)
   v <- sort(unique(tidy$vintage))
   if (length(v) < 2) return(NULL)
   dplyr::bind_rows(lapply(seq_along(v)[-1], function(i) {
@@ -132,6 +133,7 @@ extract_revisions <- function(tidy) {
 
 # National effect of each revision step, by measure and month.
 revision_summary <- function(tidy) {
+  tidy <- dplyr::filter(tidy, month >= EXTRACT_START)
   v <- sort(unique(tidy$vintage))
   if (length(v) < 2) return(NULL)
   nat <- tidy |>

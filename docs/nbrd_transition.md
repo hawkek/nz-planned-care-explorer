@@ -57,7 +57,7 @@ from patient-level Rapid records, with these rules:
 - Excluded specialties: `D81, M05, M85, M86, N01, S20`, and any code starting
   with `D, P, Y` or `R`.
 
-The NBRS-era ESPI 2 data includes seven paediatric specialties. If health
+The NBRS-era ESPI 2 data includes eight paediatric specialties. If health
 specialty codes starting with `P` are the paediatric ones (**not verified**:
 this needs Health NZ's health specialty code table), those specialties would
 leave ESPI 2 from July 2026. In December 2025 they accounted for about 3,550 of

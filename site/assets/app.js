@@ -42,7 +42,8 @@
   function fmtChange(a, b) {
     const mid = (a + b) / 2;
     if (a === b) return fmtInt(a);
-    if ((b - a) / Math.max(mid, 1) <= 0.05 && mid >= 100) return `about ${fmtInt(Math.round(mid / 10) * 10)}`;
+    const step = Math.abs(mid) >= 10000 ? 100 : 10;
+    if ((b - a) / Math.max(mid, 1) <= 0.05 && mid >= 100) return `about ${fmtInt(Math.round(mid / step) * step)}`;
     return fmtRange(a, b);
   }
   const parseMonth = (m) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7) - 1, 1));
@@ -389,7 +390,19 @@
   }
   // Only annotations that fall inside the data shown get a legend entry.
   const annIn = (ann, months) => ann.filter((a) => new Date(a.start) <= parseMonth(months[months.length - 1]) && new Date(a.end) >= parseMonth(months[0]));
-  const annLegend = (ann) => (ann.length ? [["band", css("--annotation"), `Shaded: ${ann.map((a) => a.label.replace(/^COVID-19 /, "")).join("; ")} (COVID-19)`, "long"]] : []);
+  // One entry per distinct label, with the years it applies to, e.g.
+  // "COVID-19 Alert Level 4 nationally (2020, 2021)".
+  const annLegend = (ann) => {
+    if (!ann.length) return [];
+    const years = new Map();
+    for (const a of ann) {
+      const label = a.label.replace(/^COVID-19 Delta outbreak: /, "COVID-19 ");
+      if (!years.has(label)) years.set(label, new Set());
+      years.get(label).add(a.start.slice(0, 4));
+    }
+    const text = [...years].map(([l, y]) => `${l} (${[...y].join(", ")})`).join("; ");
+    return [["band", css("--annotation"), `Shaded: ${text}`, "long"]];
+  };
   const midP = (r) => (r.plo + r.phi) / 2;
 
   function rankOf(ex, area, spec) {

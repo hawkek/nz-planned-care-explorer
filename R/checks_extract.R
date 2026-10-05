@@ -26,8 +26,9 @@ run_extract_checks <- function(ext, tidy, latest, districts, references) {
       dplyr::filter(tidy, under_negative, vintage == max(vintage)) |>
         dplyr::select(measure, month, district, specialty),
       paste("A negative count means more people waiting over four months than",
-            "waiting in total. These are the same cells as the ESPI 2 rows with a",
-            "numerator above the denominator. Kept in counts; shares for those",
+            "waiting in total. In 2019 to 2025 they are the same cells as the",
+            "OIA ESPI 2 rows with a numerator above the denominator. Kept in",
+            "counts; shares for those",
             "cells are not meaningful.")
     ),
     check_result(

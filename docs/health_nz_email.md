@@ -28,10 +28,11 @@ I have a few questions. Answers to any of them would help.
 
 **Data quality**
 
-2. In the extracts and the OIA release, almost every Hawke's Bay first
-   specialist assessment specialty roughly doubles in January 2025 and
-   returns to normal in February (for example Gynaecology 616, 1,247, 619).
-   Is this a known data issue? The site shows the values as released, marked
+2. In the extracts and the OIA release, the number of people waiting more
+   than four months for a first specialist assessment roughly doubles in
+   almost every Hawke's Bay specialty in January 2025 and returns to normal
+   in February (for example Gynaecology 616, 1,247, 619, when 1,043 people
+   were on that list in total). Is this a known data issue? The site shows the values as released, marked
    as a possible reporting error.
 
 **The move from NBRS to NBRD (July 2026)**
