@@ -144,6 +144,7 @@ p.subtitle, .subtitle { color: var(--text-secondary); font-size: 1.125rem; line-
 }
 
 /* Explorer: question, answer, then supporting detail */
+.ex-notice { font-size: 0.9375rem; color: var(--text-secondary); border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 20px 0 0; max-width: 780px; }
 .ex-question { font-size: 1.0625rem; font-weight: 600; color: var(--text-primary); margin: 28px 0 4px; line-height: 1.4; }
 .ex-question .part { white-space: nowrap; }
 .ex-question .ex-compare { display: block; }

@@ -34,3 +34,9 @@ test_that("large headline figures round to the nearest 100", {
   expect_equal(fmt_change(56402, 56477), "about 56,400")
   expect_equal(fmt_change(7880, 7920), "about 7,900")
 })
+
+test_that("ratios carry the suppression range", {
+  expect_equal(fmt_ratio_range(66633, 66678, 10201, 10231), "6.5 times")
+  expect_equal(fmt_ratio_range(20217, 20748, 4317, 4956), "between four and five times")
+  expect_equal(fmt_ratio_range(300, 420, 100, 110), "roughly two to five times")
+})
