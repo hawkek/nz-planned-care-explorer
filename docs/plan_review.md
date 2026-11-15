@@ -124,8 +124,8 @@ change on charts.
   it easier to explain, and a mismatch would be immediately visible. District
   results for June 2026 are stored and checked automatically.
 - **A data quality issue in the release:** Hawke's Bay, January 2025, looks
-  double-counted. Health NZ has since confirmed it is an error and expects to
-  correct it by the December 2026 release.
+  double-counted. Health NZ has since confirmed it is an error and hopes to
+  correct it in the December 2026 release.
 - **Election timing.** Wait times are being quoted in the 2026 election
   campaign (for example, the Health Minister citing health target results on
   1News, 30 September 2026). Launching at the end of November, as planned,
