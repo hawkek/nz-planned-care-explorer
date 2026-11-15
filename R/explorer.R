@@ -61,8 +61,13 @@ build_explorer <- function(lv, measure) {
   # Cells flagged as one-month spikes or dips (see find_extract_spikes()).
   # Values stay as released; the front end marks affected months.
   fl <- find_extract_spikes(d)
+  # Flags that Health NZ has confirmed as errors (config/confirmed_errors.csv)
+  # are labelled as confirmed rather than possible.
+  conf <- read_confirmed_errors()
+  conf <- conf[conf$measure == measure, ]
   flags <- data.frame(d = fl$district, s = fl$specialty, i = match(fl$month, months) - 1L,
-                      dev = round(fl$value - fl$local_median))
+                      dev = round(fl$value - fl$local_median),
+                      c = paste(fl$district, fl$month) %in% paste(conf$district, conf$month))
   list(
     measure = measure,
     label = unname(MEASURE_LABEL[measure]),
@@ -73,6 +78,13 @@ build_explorer <- function(lv, measure) {
     trend = list(fit = round(tr$fit, 1), lo = round(tr$lo, 1), hi = round(tr$hi, 1)),
     flags = flags
   )
+}
+
+read_confirmed_errors <- function(path = "config/confirmed_errors.csv") {
+  if (!file.exists(path)) {
+    return(data.frame(measure = character(), district = character(), month = as.Date(character())))
+  }
+  readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols(month = "D"))
 }
 
 # ---- Findings ----------------------------------------------------------------

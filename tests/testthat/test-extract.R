@@ -101,3 +101,12 @@ test_that("explorer data carries flagged cells with their month index", {
   expect_equal(ex$flags$i, 3)            # zero-based index of the fourth month
   expect_equal(ex$flags$dev, 600)
 })
+
+test_that("confirmed errors are read with dates", {
+  f <- tempfile(fileext = ".csv")
+  writeLines(c("measure,district,month,confirmed_by,recorded",
+               "FSA,Hawke's Bay,2025-01-01,Health NZ,2026-11-15"), f)
+  x <- read_confirmed_errors(f)
+  expect_equal(x$month, as.Date("2025-01-01"))
+  expect_equal(nrow(read_confirmed_errors(tempfile())), 0)
+})

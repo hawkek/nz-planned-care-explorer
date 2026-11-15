@@ -211,7 +211,7 @@
     marks.push(Plot.tip(series, Plot.pointerX({
       x: "date", y: val,
       title: (d) => `${monthLabel(d.date)}\n${Number.isNaN(val(d)) ? "Not reported" : isPct ? fmtPctRange(d.plo, d.phi, 1) : fmtRange(d.nlo, d.nhi) + " patients"}` +
-        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d) + (d.flag ? `\n${FLAG_NOTE}` : ""),
+        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d) + (d.flag ? `\n${FLAG_NOTES[d.flag]}` : ""),
     })));
     return Plot.plot({
       width: w, height: h, marginLeft: isPct ? 44 : 56, marginRight, style: plotStyle(),
@@ -370,12 +370,16 @@
     for (const f of ex.flags || []) {
       if (!(area === "New Zealand" || area === f.d) || !(spec === "All" || spec === f.s)) continue;
       const r = rows[f.i];
-      if (r && r.nlo != null && Math.abs(f.dev) >= 0.01 * Math.max(1, (r.nlo + r.nhi) / 2)) r.flag = true;
+      if (r && r.nlo != null && Math.abs(f.dev) >= 0.01 * Math.max(1, (r.nlo + r.nhi) / 2)) r.flag = f.c || r.flag === "confirmed" ? "confirmed" : "possible";
     }
     return rows;
   }
-  const FLAG_NOTE = "Possible reporting error, shown as released (see methods)";
-  const flagLegend = (rows) => (rows.some((r) => r.flag) ? [["ring", css("--accent"), FLAG_NOTE]] : []);
+  const FLAG_NOTES = {
+    confirmed: "Reporting error confirmed by Health NZ, shown as released (see methods)",
+    possible: "Possible reporting error, shown as released (see methods)",
+  };
+  const FLAG_SHORT = { confirmed: "Reporting error confirmed by Health NZ", possible: "Possible reporting error" };
+  const flagLegend = (rows) => ["confirmed", "possible"].filter((k) => rows.some((r) => r.flag === k)).map((k) => ["ring", css("--accent"), FLAG_NOTES[k]]);
   const latestRow = (rows) => rows.filter((r) => r.nlo != null).pop();
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   // Change with an arrow and words, never colour: "↓ about 7,900 (11%) since June 2025".
@@ -457,7 +461,7 @@
         takeaway: fd.text,
         draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting 4 months or more", label: "New Zealand" }),
         legendItems: [["", css("--series-1"), "Waiting four months or more"], ["", css("--text-muted"), "Smoothed trend (band: 95% uncertainty in the trend)"], ...flagLegend(rows), ...annLegend(ann)],
-        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : "") }], rows.filter((r) => r.nlo != null).reverse()),
+        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? FLAG_SHORT[r.flag] : "") }], rows.filter((r) => r.nlo != null).reverse()),
       }));
     }));
   }
@@ -560,7 +564,7 @@
         { label: "Waited 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi), raw: (r) => (r.nlo === r.nhi ? r.nlo : `${r.nlo}-${r.nhi}`) },
         { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi), raw: (r) => (r.tlo === r.thi ? r.tlo : `${r.tlo}-${r.thi}`) },
         { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1), raw: (r) => (r.ulo == null ? "" : `${(100 * r.ulo).toFixed(1)}-${(100 * r.uhi).toFixed(1)}`) },
-        { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : ""), raw: (r) => (r.flag ? "Possible reporting error (shown as released)" : "") },
+        { label: "Note", value: (r) => (r.flag ? FLAG_SHORT[r.flag] : ""), raw: (r) => (r.flag ? `${FLAG_SHORT[r.flag]} (shown as released)` : "") },
       ];
       const shown = rows.filter((r) => r.nlo != null).reverse();
       const tableBlock = el("div", {},
@@ -618,7 +622,7 @@
     let code = "FSA";
     const body = el("div");
     root.replaceChildren(
-      el("p", {}, "Each dot is a district. Bigger waiting lists sit further right. If every district had the same underlying share waiting four months or more, dots would scatter inside the funnel by chance. Dots outside the outer lines differ by more than chance and the usual variation between districts. This is not adjusted for need, such as age, deprivation or use of private care."),
+      el("p", {}, "Each dot is a district. Higher dots have a larger share of their list waiting four months or more; dots further right have bigger lists. The outer lines mark the usual variation between districts. A named, coloured dot outside them stands out by more than that variation would explain."),
       el("div", { class: "controls" }, segmented("Waiting for", MEASURES, code, (v) => { code = v; draw(); })),
       body);
     function draw() {
@@ -629,10 +633,12 @@
         sub: `${monthLabel(parseMonth(f.latest))}. National share waiting four months or more ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#district-comparison">methods</a>.`,
         draw: (w) => {
           const s1 = css("--series-1"), axis = css("--axis"), muted = css("--text-muted");
+          const xs = f.limits.map((l) => Math.log(l.size));
+          const nearLeft = (p) => (Math.log(p.size) - xs[0]) / (xs[xs.length - 1] - xs[0]) < 0.2;
           return Plot.plot({
             width: w, height: chartHeight(w) + 40, marginLeft: 48, marginRight: 16, marginBottom: 40, style: plotStyle(),
             x: { type: "log", label: "People on the waiting list (log scale)", tickFormat: "~s", ticks: w < 480 ? 3 : 6 },
-            y: { label: "Share waiting 4 months or more", grid: true, tickFormat: (d) => `${Math.round(d * 100)}%`, domain: [0, Math.min(1, Math.max(...pts.map((p) => p.y), ...f.limits.map((l) => l.hi998)) * 1.05)] },
+            y: { label: "Larger share waiting 4 months or more", grid: true, tickFormat: (d) => `${Math.round(d * 100)}%`, domain: [0, Math.min(1, Math.max(...pts.map((p) => p.y), ...f.limits.map((l) => l.hi998)) * 1.1)] },
             marks: [
               Plot.line(f.limits, { x: "size", y: "lo998", stroke: muted, strokeWidth: 1 }),
               Plot.line(f.limits, { x: "size", y: "hi998", stroke: muted, strokeWidth: 1 }),
@@ -640,12 +646,31 @@
               Plot.line(f.limits, { x: "size", y: "hi95", stroke: axis, strokeWidth: 1 }),
               Plot.ruleY([f.target], { stroke: css("--text-secondary"), strokeWidth: 1 }),
               Plot.dot(pts, { x: "size", y: "y", r: 5, fill: (p) => (p.status.includes("99.8") ? s1 : muted), stroke: css("--surface-1"), strokeWidth: 2 }),
-              Plot.text(pts.filter((p) => p.status !== "within limits"), { x: "size", y: "y", text: "d", dy: -10, fill: css("--text-primary"), fontSize: 11 }),
+              // Outliers are named in bold; districts between the 95% and 99.8% limits in lighter text.
+              // Labels sit away from the national line, and to the right of dots near the left edge.
+              ...[[(p) => p.status !== "within limits" && !p.status.includes("99.8"), { fill: css("--text-secondary"), fontSize: 11 }],
+                [(p) => p.status.includes("99.8"), { fill: css("--text-primary"), fontSize: 12, fontWeight: 600 }]].flatMap(([keep, style]) => {
+                // On a phone only the outliers are named; there is no room for more.
+                const sel = w < 560 && !style.fontWeight ? [] : pts.filter(keep);
+                // Lighter labels always sit beside their dot, clear of the limit lines.
+                const beside = (p) => !style.fontWeight || nearLeft(p);
+                const edge = sel.filter(beside), rest = sel.filter((p) => !beside(p));
+                const base = { x: "size", y: "y", text: "d", stroke: css("--surface-1"), strokeWidth: 3, ...style };
+                return [
+                  Plot.text(edge, { ...base, textAnchor: "start", dx: 9 }),
+                  Plot.text(rest.filter((p) => p.y >= f.target), { ...base, dy: -11 }),
+                  Plot.text(rest.filter((p) => p.y < f.target), { ...base, dy: 13 }),
+                ];
+              }),
+              // Say on the chart what each line and zone means.
+              Plot.text([f.limits[0]], { x: "size", y: () => f.target, text: () => `National ${fmtPct(f.target, 1)}`, textAnchor: "start", dx: 4, dy: -7, fill: css("--text-secondary"), fontSize: 11, stroke: css("--surface-1"), strokeWidth: 3 }),
+              Plot.text(w < 560 ? [] : [f.limits[0]], { x: "size", y: "hi998", text: () => "Above this line: a larger share than usual variation explains", textAnchor: "start", dx: 4, dy: -7, fill: css("--text-secondary"), fontSize: 11, stroke: css("--surface-1"), strokeWidth: 3 }),
+              Plot.text(w < 560 ? [] : [f.limits[f.limits.length - 1]], { x: "size", y: "lo998", text: () => "Below this line: a smaller share than usual variation explains", textAnchor: "end", dy: 11, fill: css("--text-secondary"), fontSize: 11, stroke: css("--surface-1"), strokeWidth: 3 }),
               Plot.tip(pts, Plot.pointer({ x: "size", y: "y", title: (p) => `${p.d}\n${fmtPct(p.y, 1)} of ${fmtInt(p.size)} waiting 4 months or more\n${p.status}` })),
             ],
           });
         },
-        legendItems: [["dot", css("--series-1"), "Outside the 99.8% limits"], ["dot", css("--text-muted"), "Within the 99.8% limits"], ["", css("--text-muted"), "99.8% limits"], ["", css("--axis"), "95% limits"], ["", css("--text-secondary"), "National share"]],
+        legendItems: [["dot", css("--series-1"), "Stands out (outside the outer, 99.8% limits)"], ["dot", css("--text-muted"), "Within the usual variation"], ["", css("--text-muted"), "Outer (99.8%) limits"], ["", css("--axis"), "Inner (95%) limits"], ["", css("--text-secondary"), "National share"]],
         table: dataTable([
           { label: "District", value: (r) => r.d },
           { label: "On the list", value: (r) => fmtInt(r.size) },
