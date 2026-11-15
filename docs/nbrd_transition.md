@@ -153,6 +153,20 @@ This makes confirming the licence for the data itself more important, not less.
    tracker. Keep them as historical context.
 5. **Population rates:** keep them off (see finding 1).
 
+## Health NZ's reply (2026)
+
+Health NZ answered a shorter enquiry (licence, Hawke's Bay, statistic 513); see
+`docs/health_nz_correspondence.md`. On NBRD:
+
+- ESPI waitlist data is still sourced from NBRS. NBRD is going through final
+  validation and Health NZ hopes to release it in Q1 or Q2 of 2026/27.
+- Exits without being seen (statistic 513) are not consistent with the NBRS
+  waitlist, because they come from a different repository. Health NZ can
+  provide them once ESPI monitoring moves fully to NBRD.
+
+So the Q1 2026/27 extract may still come from NBRS, and the break may fall
+later than July 2026. Check the source stated in each new extract.
+
 ## Questions for Health NZ (data-enquiries@health.govt.nz)
 
 1. Does the ESPI web tool now draw on NBRD? If so, from which month, and were

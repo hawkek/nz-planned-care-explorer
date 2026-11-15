@@ -31,7 +31,8 @@ Status as of 4 October 2026. Decisions are recorded in
       (`contact-email`)
 - [x] Merge the pull request; site live at
       https://hawkek.github.io/nz-planned-care-explorer/ (4 October)
-- [ ] Send `docs/health_nz_email.md` to data-enquiries@health.govt.nz
+- [x] Send `docs/health_nz_email.md` to data-enquiries@health.govt.nz (sent
+      5 October; reply recorded in `docs/health_nz_correspondence.md`)
 - [ ] Lighthouse catalogue search for existing waiting list products
 - [ ] Read-through of findings and methods by you, a statistician and a
       non-specialist
@@ -65,6 +66,8 @@ Status as of 4 October 2026. Decisions are recorded in
 5. Re-read the three generated findings for accuracy and neutral wording.
 6. Add a change log entry on the methods page, then merge.
 
-The Q1 2026/27 extract (expected around December 2026) will probably come from
-NBRD. Before merging it, compare the overlapping months with the previous
+The Q1 2026/27 extract (expected around December 2026) may still come from
+NBRS: Health NZ says NBRD is still in final validation. It should also correct
+the Hawke's Bay January 2025 error; check that it has, then update the methods
+page. Before merging it, compare the overlapping months with the previous
 extract and decide how to present any break.
