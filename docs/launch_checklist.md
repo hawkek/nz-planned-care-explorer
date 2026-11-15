@@ -9,7 +9,7 @@ Status as of 4 October 2026. Decisions are recorded in
       OIA history, suppression as ranges, revisions log
 - [x] 27 automatic data checks, including Health NZ's published June 2026
       health target results (national mismatch stops publishing)
-- [x] 99 unit tests
+- [x] 101 unit tests
 - [x] Overview, Explore, Methods & data, and referral and prioritisation pages
 - [x] Design system (palette checked for colour-vision separation, self-hosted
       fonts, light and dark)

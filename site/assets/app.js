@@ -211,7 +211,7 @@
     marks.push(Plot.tip(series, Plot.pointerX({
       x: "date", y: val,
       title: (d) => `${monthLabel(d.date)}\n${Number.isNaN(val(d)) ? "Not reported" : isPct ? fmtPctRange(d.plo, d.phi, 1) : fmtRange(d.nlo, d.nhi) + " patients"}` +
-        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d) + (d.flag ? `\n${FLAG_NOTE}` : ""),
+        (d.fit != null ? `\nSmoothed trend: ${fmtInt(d.fit)}` : "") + cmpAt(d) + (d.flag ? `\n${FLAG_NOTES[d.flag]}` : ""),
     })));
     return Plot.plot({
       width: w, height: h, marginLeft: isPct ? 44 : 56, marginRight, style: plotStyle(),
@@ -370,12 +370,16 @@
     for (const f of ex.flags || []) {
       if (!(area === "New Zealand" || area === f.d) || !(spec === "All" || spec === f.s)) continue;
       const r = rows[f.i];
-      if (r && r.nlo != null && Math.abs(f.dev) >= 0.01 * Math.max(1, (r.nlo + r.nhi) / 2)) r.flag = true;
+      if (r && r.nlo != null && Math.abs(f.dev) >= 0.01 * Math.max(1, (r.nlo + r.nhi) / 2)) r.flag = f.c || r.flag === "confirmed" ? "confirmed" : "possible";
     }
     return rows;
   }
-  const FLAG_NOTE = "Possible reporting error, shown as released (see methods)";
-  const flagLegend = (rows) => (rows.some((r) => r.flag) ? [["ring", css("--accent"), FLAG_NOTE]] : []);
+  const FLAG_NOTES = {
+    confirmed: "Reporting error confirmed by Health NZ, shown as released (see methods)",
+    possible: "Possible reporting error, shown as released (see methods)",
+  };
+  const FLAG_SHORT = { confirmed: "Reporting error confirmed by Health NZ", possible: "Possible reporting error" };
+  const flagLegend = (rows) => ["confirmed", "possible"].filter((k) => rows.some((r) => r.flag === k)).map((k) => ["ring", css("--accent"), FLAG_NOTES[k]]);
   const latestRow = (rows) => rows.filter((r) => r.nlo != null).pop();
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   // Change with an arrow and words, never colour: "↓ about 7,900 (11%) since June 2025".
@@ -457,7 +461,7 @@
         takeaway: fd.text,
         draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting 4 months or more", label: "New Zealand" }),
         legendItems: [["", css("--series-1"), "Waiting four months or more"], ["", css("--text-muted"), "Smoothed trend (band: 95% uncertainty in the trend)"], ...flagLegend(rows), ...annLegend(ann)],
-        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : "") }], rows.filter((r) => r.nlo != null).reverse()),
+        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? FLAG_SHORT[r.flag] : "") }], rows.filter((r) => r.nlo != null).reverse()),
       }));
     }));
   }
@@ -560,7 +564,7 @@
         { label: "Waited 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi), raw: (r) => (r.nlo === r.nhi ? r.nlo : `${r.nlo}-${r.nhi}`) },
         { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi), raw: (r) => (r.tlo === r.thi ? r.tlo : `${r.tlo}-${r.thi}`) },
         { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1), raw: (r) => (r.ulo == null ? "" : `${(100 * r.ulo).toFixed(1)}-${(100 * r.uhi).toFixed(1)}`) },
-        { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : ""), raw: (r) => (r.flag ? "Possible reporting error (shown as released)" : "") },
+        { label: "Note", value: (r) => (r.flag ? FLAG_SHORT[r.flag] : ""), raw: (r) => (r.flag ? `${FLAG_SHORT[r.flag]} (shown as released)` : "") },
       ];
       const shown = rows.filter((r) => r.nlo != null).reverse();
       const tableBlock = el("div", {},
