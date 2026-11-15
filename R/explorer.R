@@ -10,8 +10,8 @@ MEASURE_FOR <- c(
   Treatment = "planned treatment"
 )
 MEASURE_PHRASE <- c(
-  FSA = "waited more than four months for a first specialist assessment",
-  Treatment = "waited more than four months for planned treatment"
+  FSA = "waited four months or more for a first specialist assessment",
+  Treatment = "waited four months or more for planned treatment"
 )
 
 # Aggregate the tidy extract (one measure) to every area x specialty
@@ -87,20 +87,27 @@ finding_measure <- function(lv, measure, base = as.Date("2019-01-01")) {
   latest <- max(d$month)
   now <- national_row(s, latest)
   then <- national_row(s, base)
-  ratio <- now$o_mid / then$o_mid
+  prev <- national_row(s, seq(latest, by = "-1 year", length.out = 2)[2])
+  # The recent change sits beside the long-run comparison, so neither the rise
+  # since the base month nor a recent fall is shown alone.
+  recent <- if (nrow(prev) == 1) {
+    sprintf("That is %s, and ", describe_change(now$o_lo, now$o_hi, prev$o_lo, prev$o_hi, prev$month))
+  } else "That is "
   list(
     measure = measure,
-    title = sprintf("%s people have %s", cap_first(fmt_count_range(now$o_lo, now$o_hi)),
-                    MEASURE_PHRASE[[measure]]),
+    title = sprintf("At the end of %s, %s people had %s", month_label(latest),
+                    fmt_count_range(now$o_lo, now$o_hi), MEASURE_PHRASE[[measure]]),
     text = paste0(
-      sprintf("In %s, that was %s of everyone waiting for %s (%s people). ",
-              month_label(latest), fmt_pct_range(now$p_lo, now$p_hi),
-              MEASURE_FOR[[measure]], fmt_count_range(now$t_lo, now$t_hi)),
-      sprintf("In %s it was %s (%s), so the number is now %s times as high. ",
-              month_label(base), fmt_count_range(then$o_lo, then$o_hi),
-              fmt_pct_range(then$p_lo, then$p_hi), formatC(ratio, format = "f", digits = 1)),
-      sprintf("%s were waiting less than four months, against a health target of 95%% by 2030.",
-              cap_first(fmt_pct_range(1 - now$p_hi, 1 - now$p_lo)))
+      sprintf("They were %s of the people on the waiting list for %s (%s). ",
+              fmt_pct_range(now$p_lo, now$p_hi), MEASURE_FOR[[measure]],
+              fmt_count_range(now$t_lo, now$t_hi)),
+      recent,
+      sprintf("%s the %s count of %s (%s of the list then). ",
+              fmt_ratio_range(now$o_lo, now$o_hi, then$o_lo, then$o_hi), month_label(base),
+              fmt_count_range(then$o_lo, then$o_hi), fmt_pct_range(then$p_lo, then$p_hi)),
+      sprintf("%s had waited less than four months, against a health target of 95%% by 2030. ",
+              cap_first(fmt_pct_range(1 - now$p_hi, 1 - now$p_lo))),
+      "The count is of people on the list on that day, not of everyone who waited during the year."
     ),
     series = "New Zealand|All"
   )

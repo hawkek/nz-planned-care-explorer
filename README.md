@@ -95,7 +95,9 @@ Both are off while empty.
 See `docs/plan_review.md` for what is done and what is open. In short: four
 quarterly extracts and the OIA history are loaded, checked and published, and
 the latest extract reproduces Health NZ's published June 2026 health target
-results. The licence confirmation and user testing are still to do.
+results. Health NZ has confirmed that the data may be published, and that the
+Hawke's Bay January 2025 figures flagged by this project are a reporting error
+(`docs/health_nz_correspondence.md`). User testing is still to do.
 
 ## Licence
 

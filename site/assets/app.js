@@ -328,7 +328,7 @@
     const hasTrend = series[0] && series[0].fit != null;
     const items = [["", css("--series-1"), isPct ? "Monthly percentage" : "Monthly count"]];
     if (!isPct && series.some((d) => d.nlo !== d.nhi)) items.push(["band", css("--wash"), "Range from suppressed small counts"]);
-    if (hasTrend) items.push(["", css("--text-muted"), "Smoothed trend with 95% interval"]);
+    if (hasTrend) items.push(["", css("--text-muted"), "Smoothed trend (band: 95% uncertainty in the trend)"]);
     const inRange = (opts.annotations || []).filter((a) => new Date(a.start) <= series[series.length - 1].date);
     if (inRange.length) items.push(["band", css("--annotation"), inRange.map((a) => `${a.label} (${monthShort(new Date(a.start))})`).join("; ")]);
     return card({
@@ -455,9 +455,9 @@
       const rows = markFlags(x, "New Zealand", "All", explorerRows(x, fd.series)).map((r, j) => ({ ...r, fit: x.trend.fit[j], flo: x.trend.lo[j], fhi: x.trend.hi[j] }));
       return el("div", { class: "finding" }, head, card({
         takeaway: fd.text,
-        draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting over 4 months", label: "New Zealand" }),
-        legendItems: [["", css("--series-1"), "Waiting more than four months"], ["", css("--text-muted"), "Smoothed trend with 95% interval"], ...flagLegend(rows), ...annLegend(ann)],
-        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : "") }], rows.filter((r) => r.nlo != null).reverse()),
+        draw: (w) => lineChart(w, { series: rows, trend: true, annotations: ann, yLabel: "People waiting 4 months or more", label: "New Zealand" }),
+        legendItems: [["", css("--series-1"), "Waiting four months or more"], ["", css("--text-muted"), "Smoothed trend (band: 95% uncertainty in the trend)"], ...flagLegend(rows), ...annLegend(ann)],
+        table: dataTable([{ label: "Month", value: (r) => monthShort(r.date) }, { label: "Waiting 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) }, { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : "") }], rows.filter((r) => r.nlo != null).reverse()),
       }));
     }));
   }
@@ -469,6 +469,7 @@
     let spec = h.get("specialty") || "All";
     let barMode = "count";
     let compareWith = h.get("compare") || "";
+    let notice = "";
     const controls = el("div", { class: "controls controls-sticky" });
     const body = el("div");
     root.replaceChildren(controls, body);
@@ -476,12 +477,18 @@
     function drawControls() {
       const x = ex[measure];
       if (!x.areas.includes(area)) area = "New Zealand";
-      if (spec !== "All" && !x.specialties.includes(spec)) spec = "All";
+      if (spec !== "All" && !x.specialties.includes(spec)) {
+        // The two lists use different specialty groupings; say so instead of
+        // switching silently.
+        notice = `${spec} is not a specialty on the ${MEASURES.find((m) => m[0] === measure)[1].toLowerCase()} list, so all specialties are shown.`;
+        spec = "All";
+        setHash("specialty", spec);
+      }
       controls.replaceChildren(
         segmented("Waiting for", MEASURES, measure, (v) => { measure = v; setHash("measure", v); drawControls(); draw(); }),
-        selectControl("Area", x.areas, area, (v) => { area = v; setHash("area", v); draw(); }),
+        selectControl("Area", x.areas, area, (v) => { area = v; notice = ""; setHash("area", v); draw(); }),
         selectControl("Specialty", ["All specialties", ...x.specialties], spec === "All" ? "All specialties" : spec,
-          (v) => { spec = v === "All specialties" ? "All" : v; setHash("specialty", spec); draw(); }),
+          (v) => { spec = v === "All specialties" ? "All" : v; notice = ""; setHash("specialty", spec); draw(); }),
         selectControl("Compare with", ["No comparison", ...x.areas], compareWith || "No comparison",
           (v) => { compareWith = v === "No comparison" ? "" : v; setHash("compare", compareWith); draw(); }));
     }
@@ -499,7 +506,6 @@
       const i19 = x.months.indexOf("2019-01");
       const r19 = i19 >= 0 ? rows[i19] : null;
       const prev = yearEarlier(rows.filter((r) => r.nlo != null));
-      const rank = area !== "New Zealand" ? rankOf(x, area, spec) : null;
       // 1. The question, 2. the answer, 3. supporting figures.
       // The selection, spelled out above the result so nobody has to read it
       // back from the controls.
@@ -509,18 +515,19 @@
         cmpArea0() ? el("span", { class: "ex-compare" }, ` compared with ${cmpArea0()}`) : null);
       const answer = el("h2", { class: "ex-answer" },
         el("a", { class: "num", href: `${OFFSET}methods.html#measures`, title: "What this number means" }, cap(headline(now.nlo, now.nhi))),
-        el("span", { class: "rest" }, ` people had waited more than four months in ${monthLabel(now.date)}`));
+        el("span", { class: "rest" }, ` people had waited four months or more at the end of ${monthLabel(now.date)}`));
       const delta = el("p", { class: "ex-delta" }, prev ? changeArrow(now, prev, `${monthLabel(prev.date)}`) : "",
         now.nlo !== now.nhi ? ` · exact range ${fmtRange(now.nlo, now.nhi)}` : "");
       const peak = rows.filter((r) => r.nlo != null).reduce((a, r) => (r.nlo + r.nhi > a.nlo + a.nhi ? r : a));
+      // Suppression ranges can overlap, so the highest month is not always certain.
+      const peakTied = rows.some((r) => r.nlo != null && r !== peak && r.nhi >= peak.nlo);
       const stat = (label, val, sub) => el("div", {}, el("p", { class: "label" }, label), el("p", { class: "val" }, val), sub ? el("p", { class: "sub" }, sub) : null);
       const stats = el("div", { class: "stats-secondary" },
         stat("Waiting less than four months", now.ulo == null ? "unknown" : fmtPctRange(now.ulo, now.uhi),
           el("span", {}, `of ${headline(now.tlo, now.thi)} waiting · `, el("a", { href: `${OFFSET}methods.html#health-targets` }, "target 95%"))),
         stat("Since January 2019", r19 && r19.nlo != null ? changeArrow(now, r19, "", true) : "not reported",
           r19 && r19.nlo != null ? `${fmtRange(r19.nlo, r19.nhi)} in January 2019` : null),
-        stat("Highest month", headline(peak.nlo, peak.nhi), monthLabel(peak.date)),
-        rank ? stat(`Rank among districts${spec === "All" ? "" : ` (${spec})`}`, `${ordinal(rank.rank)} of ${rank.of}`, "1 = smallest share waiting over four months") : null);
+        stat(peakTied ? "Highest month (by midpoint)" : "Highest month", headline(peak.nlo, peak.nhi), peakTied ? `${monthLabel(peak.date)}; another month's range overlaps` : monthLabel(peak.date)));
 
       function cmpArea0() { return compareWith && compareWith !== area ? compareWith : ""; }
       const isNZAll = key === "New Zealand|All";
@@ -532,10 +539,10 @@
       const countCard = card({
         takeaway: "",
         sub: "Monthly trend",
-        alt: `Monthly trend: people in ${where} who had waited more than four months for ${MEASURE_NOUN[measure]}, ${monthLabel(rows.find((r) => r.nlo != null).date)} to ${monthLabel(now.date)}. Values are in the data table below.`,
+        alt: `Monthly trend: people in ${where} who had waited four months or more for ${MEASURE_NOUN[measure]}, ${monthLabel(rows.find((r) => r.nlo != null).date)} to ${monthLabel(now.date)}. Values are in the data table below.`,
         primary: true,
         draw: (w) => lineChart(w, { series: trendRows, trend: isNZAll, annotations: ann, yLabel: "People", label: area, big: true }),
-        legendItems: [["", css("--series-1"), "Waited more than four months"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend with 95% interval"]] : []), ...flagLegend(rows), ...annLegend(ann)],
+        legendItems: [["", css("--series-1"), "Waited four months or more"], ...(isNZAll ? [["", css("--text-muted"), "Smoothed trend (band: 95% uncertainty in the trend)"]] : []), ...flagLegend(rows), ...annLegend(ann)],
         table: null,
       });
       const pctRows = rows.map((r) => ({ ...r, nlo: null, nhi: null, plo: r.ulo, phi: r.uhi }));
@@ -550,7 +557,7 @@
 
       const tableCols = [
         { label: "Month", value: (r) => monthShort(r.date), raw: (r) => r.m },
-        { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi), raw: (r) => (r.nlo === r.nhi ? r.nlo : `${r.nlo}-${r.nhi}`) },
+        { label: "Waited 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi), raw: (r) => (r.nlo === r.nhi ? r.nlo : `${r.nlo}-${r.nhi}`) },
         { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi), raw: (r) => (r.tlo === r.thi ? r.tlo : `${r.tlo}-${r.thi}`) },
         { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi, 1), raw: (r) => (r.ulo == null ? "" : `${(100 * r.ulo).toFixed(1)}-${(100 * r.uhi).toFixed(1)}`) },
         { label: "Note", value: (r) => (r.flag ? "Possible reporting error" : ""), raw: (r) => (r.flag ? "Possible reporting error (shown as released)" : "") },
@@ -563,7 +570,7 @@
       const vintage = meta.extract.latest_vintage.replace(/^(\d{4})-(\d{2})-(Q\d)$/, "$1/$2 $3");
       const note = el("p", { class: "meta-line quiet" }, `Source: Health NZ waitlist extract ${vintage}, ${monthLabel(parseMonth(x.months[0]))} to ${monthLabel(parseMonth(x.months[x.months.length - 1]))}. Historical figures may be revised by Health NZ; `,
         el("a", { href: `${OFFSET}methods.html#revisions` }, "see revisions"), ".");
-      body.replaceChildren(question, answer, delta, countCard, note, stats, pctCard, tableBlock, breakdown());
+      body.replaceChildren(notice ? el("p", { class: "ex-notice", role: "status" }, notice) : "", question, answer, delta, countCard, note, stats, pctCard, tableBlock, breakdown());
 
       function breakdown() {
         const latest = x.months.length - 1;
@@ -582,16 +589,16 @@
             .map((it) => ({ label: it.label, ...it.r }));
           bars.sort((a, b) => (isShare ? (b.ulo + b.uhi) - (a.ulo + a.uhi) : (b.nlo + b.nhi) - (a.nlo + a.nhi)));
           wrap.replaceChildren(bars.length === 0 ? el("p", {}, "Nothing to show for this selection.") : card({
-            takeaway: `${monthLabel(parseMonth(x.months[latest]))}: ${isShare ? "share waiting under four months" : "waited more than four months"}`,
+            takeaway: `${monthLabel(parseMonth(x.months[latest]))}: ${isShare ? "share waiting under four months" : "waited four months or more"}`,
             draw: (w) => barChart(w, bars, {
               label: "label", lo: isShare ? "ulo" : "nlo", hi: isShare ? "uhi" : "nhi", isPct: isShare,
               target: isShare ? 0.95 : null, xmax: isShare ? 1 : null, highlight: area,
-              tip: (r) => `${r.label}\n${fmtRange(r.nlo, r.nhi)} waited over 4 months\n${fmtPctRange(r.ulo, r.uhi)} waiting under 4 months`,
+              tip: (r) => `${r.label}\n${fmtRange(r.nlo, r.nhi)} waited 4 months or more\n${fmtPctRange(r.ulo, r.uhi)} waiting under 4 months`,
             }),
             legendItems: [["band", css("--series-1"), isShare ? "Share under four months" : "People"], ["band", css("--wash"), "Range from suppressed small counts"], ...(isShare ? [["dash", css("--accent"), "Health target: 95%"]] : [])],
             table: dataTable([
               { label: spec === "All" && area !== "New Zealand" ? "Specialty" : "District", value: (r) => r.label },
-              { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) },
+              { label: "Waited 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) },
               { label: "Total waiting", value: (r) => fmtRange(r.tlo, r.thi) },
               { label: "Under 4 months", value: (r) => fmtPctRange(r.ulo, r.uhi) },
             ], bars),
@@ -611,7 +618,7 @@
     let code = "FSA";
     const body = el("div");
     root.replaceChildren(
-      el("p", {}, "Each dot is a district. Bigger waiting lists sit further right. If every district had the same underlying share waiting over four months, dots would scatter inside the funnel by chance. Dots outside the outer lines differ by more than chance and the usual variation between districts. This is not adjusted for need, such as age, deprivation or use of private care."),
+      el("p", {}, "Each dot is a district. Bigger waiting lists sit further right. If every district had the same underlying share waiting four months or more, dots would scatter inside the funnel by chance. Dots outside the outer lines differ by more than chance and the usual variation between districts. This is not adjusted for need, such as age, deprivation or use of private care."),
       el("div", { class: "controls" }, segmented("Waiting for", MEASURES, code, (v) => { code = v; draw(); })),
       body);
     function draw() {
@@ -619,13 +626,13 @@
       const pts = f.points;
       body.replaceChildren(card({
         takeaway: f.takeaway,
-        sub: `${monthLabel(parseMonth(f.latest))}. National share waiting over four months ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#district-comparison">methods</a>.`,
+        sub: `${monthLabel(parseMonth(f.latest))}. National share waiting four months or more ${fmtPct(f.target, 1)}. Limits allow for overdispersion (factor ${Math.round(f.phi)}); see <a href="${OFFSET}methods.html#district-comparison">methods</a>.`,
         draw: (w) => {
           const s1 = css("--series-1"), axis = css("--axis"), muted = css("--text-muted");
           return Plot.plot({
             width: w, height: chartHeight(w) + 40, marginLeft: 48, marginRight: 16, marginBottom: 40, style: plotStyle(),
             x: { type: "log", label: "People on the waiting list (log scale)", tickFormat: "~s", ticks: w < 480 ? 3 : 6 },
-            y: { label: "Share waiting over 4 months", grid: true, tickFormat: (d) => `${Math.round(d * 100)}%`, domain: [0, Math.min(1, Math.max(...pts.map((p) => p.y), ...f.limits.map((l) => l.hi998)) * 1.05)] },
+            y: { label: "Share waiting 4 months or more", grid: true, tickFormat: (d) => `${Math.round(d * 100)}%`, domain: [0, Math.min(1, Math.max(...pts.map((p) => p.y), ...f.limits.map((l) => l.hi998)) * 1.05)] },
             marks: [
               Plot.line(f.limits, { x: "size", y: "lo998", stroke: muted, strokeWidth: 1 }),
               Plot.line(f.limits, { x: "size", y: "hi998", stroke: muted, strokeWidth: 1 }),
@@ -634,7 +641,7 @@
               Plot.ruleY([f.target], { stroke: css("--text-secondary"), strokeWidth: 1 }),
               Plot.dot(pts, { x: "size", y: "y", r: 5, fill: (p) => (p.status.includes("99.8") ? s1 : muted), stroke: css("--surface-1"), strokeWidth: 2 }),
               Plot.text(pts.filter((p) => p.status !== "within limits"), { x: "size", y: "y", text: "d", dy: -10, fill: css("--text-primary"), fontSize: 11 }),
-              Plot.tip(pts, Plot.pointer({ x: "size", y: "y", title: (p) => `${p.d}\n${fmtPct(p.y, 1)} of ${fmtInt(p.size)} waiting over 4 months\n${p.status}` })),
+              Plot.tip(pts, Plot.pointer({ x: "size", y: "y", title: (p) => `${p.d}\n${fmtPct(p.y, 1)} of ${fmtInt(p.size)} waiting 4 months or more\n${p.status}` })),
             ],
           });
         },
@@ -642,7 +649,7 @@
         table: dataTable([
           { label: "District", value: (r) => r.d },
           { label: "On the list", value: (r) => fmtInt(r.size) },
-          { label: "Waited over 4 months", value: (r) => fmtRange(r.nlo, r.nhi) },
+          { label: "Waited 4 months or more", value: (r) => fmtRange(r.nlo, r.nhi) },
           { label: "Share", value: (r) => fmtPct(r.y, 1) },
           { label: "Compared with limits", value: (r) => r.status },
         ], pts.slice().sort((a, b) => b.y - a.y)),
@@ -661,7 +668,8 @@
     root.append(el("div", { class: "controls" }, selectControl("Area", names, area, (v) => { area = v; setHash("area", v); draw(); })), body);
     function draw() {
       const src = area === "New Zealand" ? nat : dd.districts[area].indicators;
-      body.replaceChildren(...["ESPI1", "ESPI3", "ESPI8"].filter((c) => src[c]).map((c) => indicatorCard(meta, c, src[c], { annotations: ann })));
+      body.replaceChildren(...["ESPI1", "ESPI3", "ESPI8"].filter((c) => src[c]).flatMap((c) => [indicatorCard(meta, c, src[c], { annotations: ann }),
+        ...(c === "ESPI3" ? [el("p", { class: "caveat" }, "ESPI 3 falls from about 228 to about 30 patients nationally between June and September 2022. A change that large and that fast may reflect a change in method or recording. Compare figures across 2022 with care.")] : [])]));
     }
     draw();
   }

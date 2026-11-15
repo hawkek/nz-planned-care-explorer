@@ -31,6 +31,18 @@ fmt_pct_range <- function(lo, hi, digits = 0) {
   if (identical(a, b)) a else paste(a, "to", b)
 }
 
+# "6.5 times" when suppression barely moves the ratio, otherwise the whole
+# numbers that bracket it: "roughly four to five times".
+fmt_ratio_range <- function(now_lo, now_hi, then_lo, then_hi) {
+  lo <- now_lo / then_hi
+  hi <- now_hi / then_lo
+  if (round(hi, 1) - round(lo, 1) <= 0.1) {
+    return(sprintf("%s times", formatC((lo + hi) / 2, format = "f", digits = 1)))
+  }
+  if (floor(lo) == ceiling(hi) - 1) return(sprintf("between %s and %s times", number_word(floor(lo)), number_word(ceiling(hi))))
+  sprintf("roughly %s to %s times", number_word(floor(lo)), number_word(ceiling(hi)))
+}
+
 # "8,300 more than in December 2024" / "8,300 fewer than in December 2024".
 # When suppression makes the direction uncertain, say so.
 describe_change <- function(now_lo, now_hi, then_lo, then_hi, then_month) {
@@ -124,9 +136,11 @@ takeaway_funnel <- function(points, area_col = "district") {
     paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
   }
   sprintf(paste(
-    "Districts outside the outer limits differ from the national pattern by more",
-    "than chance and normal variation between districts would explain.",
-    "Higher share than expected: %s. Lower share than expected: %s."
+    "Districts outside the outer limits differ from the national share by more",
+    "than the model allows for chance and usual variation between districts.",
+    "Above the model's upper limit: %s. Below its lower limit: %s.",
+    "The model is not adjusted for case mix, referral acceptance or the services",
+    "a district provides."
   ), list_names(above), list_names(below))
 }
 

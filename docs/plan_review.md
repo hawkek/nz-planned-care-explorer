@@ -124,7 +124,8 @@ change on charts.
   it easier to explain, and a mismatch would be immediately visible. District
   results for June 2026 are stored and checked automatically.
 - **A data quality issue in the release:** Hawke's Bay, January 2025, looks
-  double-counted. Raise it with Health NZ alongside the other questions.
+  double-counted. Health NZ has since confirmed it is an error and expects to
+  correct it by the December 2026 release.
 - **Election timing.** Wait times are being quoted in the 2026 election
   campaign (for example, the Health Minister citing health target results on
   1News, 30 September 2026). Launching at the end of November, as planned,
@@ -237,7 +238,7 @@ Still open for you to decide:
 
 | # | Decision | Outcome | Done in the repo |
 |---|---|---|---|
-| 1 | Data licence | Ask Health NZ to confirm; publish meanwhile on the stated CC BY 4.0 basis; remove downloads if asked | `DATA_LICENCE.md`, methods page; draft email in `docs/health_nz_email.md` |
+| 1 | Data licence | Asked Health NZ; they confirmed the data may be published (`docs/health_nz_correspondence.md`) | `DATA_LICENCE.md`, methods page; draft email in `docs/health_nz_email.md` |
 | 2 | OIA response letter (names the requester) | Removed; link to the public FYI.org.nz request instead (it remains in git history) | `data/raw/oia_HNZ00201361/README.md`, methods sources |
 | – | Repository name | Renamed to `hawkek/nz-planned-care-explorer` | Links updated |
 | 3 | Web address | hawkek.github.io/nz-planned-care-explorer for now; custom domain later if needed | README |

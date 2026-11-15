@@ -13,13 +13,15 @@ with exceptions for photographs, illustrations and logos, and for material
 identified as another party's copyright ([Health NZ copyright page](https://www.healthnz.govt.nz/copyright),
 checked 4 October 2026 via search results).
 
-**Position while confirmation is sought (decided 4 October 2026):** the data
-and the tidy tables derived from it are republished on the basis of Health NZ's
-stated CC BY 4.0 terms, with attribution on every page, in a non-commercial
-project. Health NZ has been asked to confirm that these terms cover the
-waitlist extracts and the OIA release (one Health NZ data dictionary also
-carries non-commercial, no-changes wording); see `docs/health_nz_email.md`.
-If Health NZ asks, the downloads will be removed.
+**Confirmed by Health NZ:** in reply to a data enquiry sent on 5 October 2026,
+Health NZ's Health Service Performance team (Health Analytics) wrote: "Yes, you
+can publish this data". The enquiry asked to republish the waitlist detail
+extracts and the OIA ESPI data, and tidy tables derived from them, under CC BY
+4.0 in a non-commercial project (see `docs/health_nz_correspondence.md`). The
+reply confirms permission to publish; it does not restate the licence terms, so
+this project continues to apply CC BY 4.0 attribution and to stay
+non-commercial, which also satisfies the non-commercial wording in the NBRD data
+dictionary.
 
 Attribution to use: "Source: Health New Zealand | Te Whatu Ora, elective services
 patient flow indicators (provisional). Compiled by NZ Planned Care Explorer, an
