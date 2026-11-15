@@ -127,21 +127,31 @@ takeaway_pct <- function(series, ind, area = "New Zealand") {
   out
 }
 
-takeaway_funnel <- function(points, area_col = "district") {
+takeaway_funnel <- function(points, area_col = "district",
+                            what = "waiting four months or more") {
   above <- points[[area_col]][grepl("^above 99.8", points$status)]
   below <- points[[area_col]][grepl("^below 99.8", points$status)]
   list_names <- function(x) {
-    if (length(x) == 0) return("none")
     if (length(x) == 1) return(x)
     paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
   }
-  sprintf(paste(
-    "Districts outside the outer limits differ from the national share by more",
-    "than the model allows for chance and usual variation between districts.",
-    "Above the model's upper limit: %s. Below its lower limit: %s.",
-    "The model is not adjusted for case mix, referral acceptance or the services",
-    "a district provides."
-  ), list_names(above), list_names(below))
+  # Lead with which districts stand out and in which direction, in plain words.
+  side <- function(x, size) {
+    if (length(x) == 0) return(NULL)
+    sprintf("%s %s a %s share %s than the usual variation between districts would explain.",
+            list_names(x), if (length(x) == 1) "has" else "have", size, what)
+  }
+  found <- c(side(above, "larger"), side(below, "smaller"))
+  none <- if (length(found) == 0) {
+    "No district stands out: all are within the usual variation between districts."
+  } else if (length(above) == 0) {
+    "No district has an unusually large share."
+  } else if (length(below) == 0) {
+    "No district has an unusually small share."
+  }
+  paste(c(found, none,
+          "This is not adjusted for case mix, referral acceptance or the services a district provides, so it is a prompt to look closer, not a verdict."),
+        collapse = " ")
 }
 
 takeaway_target <- function(proj, area, ind) {

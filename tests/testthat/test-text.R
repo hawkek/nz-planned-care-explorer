@@ -40,3 +40,12 @@ test_that("ratios carry the suppression range", {
   expect_equal(fmt_ratio_range(20217, 20748, 4317, 4956), "between four and five times")
   expect_equal(fmt_ratio_range(300, 420, 100, 110), "roughly two to five times")
 })
+
+test_that("the district comparison sentence names outliers in plain words", {
+  pts <- data.frame(district = c("A", "B", "C"),
+                    status = c("below 99.8% limit", "within limits", "below 99.8% limit"))
+  out <- takeaway_funnel(pts)
+  expect_match(out, "^A and C have a smaller share waiting four months or more")
+  expect_match(out, "No district has an unusually large share")
+  expect_match(takeaway_funnel(transform(pts, status = "within limits")), "^No district stands out")
+})
